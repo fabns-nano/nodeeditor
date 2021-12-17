@@ -11,6 +11,12 @@
     "GradientColor1": [80, 80, 80],
     "GradientColor2": [64, 64, 64],
     "GradientColor3": [58, 58, 58],
+
+    "SelectedGradientColor0": "red",
+    "SelectedGradientColor1": "red",
+    "SelectedGradientColor2": "red",
+    "SelectedGradientColor3": "red",
+
     "ShadowColor": [20, 20, 20],
     "FontColor" : "white",
     "FontColorFaded" : [200, 200, 200],
