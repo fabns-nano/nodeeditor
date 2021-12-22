@@ -17,9 +17,9 @@ namespace QtNodes
 
 enum class NodeValidationState
 {
-  Valid,
-  Warning,
-  Error
+  Valid     = 0,
+  Warning   = 1,
+  Error     = 2,
 };
 
 /**
