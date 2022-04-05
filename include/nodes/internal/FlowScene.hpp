@@ -203,7 +203,7 @@ public:
   
   QByteArray saveToMemory() const;
 
-  void loadFromMemory(const QByteArray& data);
+  std::unordered_map<QUuid, QUuid> loadFromMemory(const QByteArray& data);
 
   /**
    * @brief Creates a JSON document with the given scene items' info. Used in the
