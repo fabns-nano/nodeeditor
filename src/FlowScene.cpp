@@ -837,7 +837,7 @@ saveItems(QGraphicsItem *item) const
   return saveItems(dummyList);
 }
 
-void
+std::unordered_map<QUuid, QUuid>
 FlowScene::
 loadItems(const QByteArray& data, QPointF pastePos, bool usePastePos)
 {
@@ -905,6 +905,7 @@ loadItems(const QByteArray& data, QPointF pastePos, bool usePastePos)
       connPtr->getConnectionGraphicsObject().setSelected(true);
     }
   }
+  return IDMap;
 }
 
 bool
