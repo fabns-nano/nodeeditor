@@ -155,16 +155,29 @@ erasePort(const PortType portType,
 {
   auto& ports = getEntries(portType);
   assert(index < ports.size());
+
   auto erased_port_map_it = std::next(ports.begin(), index);
 
   // erases port connections
   for (auto& entry : *erased_port_map_it)
   {
+    assert(int(index) == entry.second->getPortIndex(portType));
     eraseConnection(portType, index, entry.first);
   }
 
   // erases port
   ports.erase(erased_port_map_it);
+
+  // reassigns subsequent ports
+  for (auto& port : ports) {
+      for (auto& conn_ptr : port) {
+      auto conn_idx = conn_ptr.second->getPortIndex(portType);
+      if (conn_idx > static_cast<int>(index)) {
+          conn_ptr.second->setPortIndex(portType, conn_idx - 1);
+      }
+    }
+  }
+
   updateConnectionIndices(portType, index);
 }
 
