@@ -170,7 +170,7 @@ erasePort(const PortType portType,
 
   // reassigns subsequent ports
   for (auto& port : ports) {
-      for (auto& conn_ptr : port) {
+    for (auto& conn_ptr : port) {
       auto conn_idx = conn_ptr.second->getPortIndex(portType);
       if (conn_idx > static_cast<int>(index)) {
           conn_ptr.second->setPortIndex(portType, conn_idx - 1);
