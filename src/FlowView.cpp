@@ -511,7 +511,7 @@ zoomFitSelected()
 {
   if(_scene->selectedItems().count() > 0){
 
-    QRectF unitedBoundingRect;
+      QRectF unitedBoundingRect{};
 
     for(QGraphicsItem * item : _scene->selectedItems())
     {
