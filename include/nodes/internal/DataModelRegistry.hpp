@@ -18,15 +18,6 @@
 namespace QtNodes
 {
 
-inline
-bool
-operator<(QtNodes::NodeDataType const & d1,
-          QtNodes::NodeDataType const & d2)
-{
-  return d1.id < d2.id;
-}
-
-
 /// Class uses map for storing models (name, model)
 /**
  * @brief The DataModelRegistry class stores the node models that can be created
@@ -45,7 +36,8 @@ public:
   using RegisteredModelsCategoryMap = std::unordered_map<QString, QString>;
   using CategoriesSet = std::set<QString>;
 
-  using RegisteredTypeConvertersMap = std::map<TypeConverterId, TypeConverter>;
+  using RegisteredTypeConvertersMap = std::unordered_map<
+      TypeConverterId, TypeConverter, TypeConverterIdHash>;
 
   DataModelRegistry()  = default;
   ~DataModelRegistry() = default;

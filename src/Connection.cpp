@@ -455,7 +455,7 @@ propagateData(std::shared_ptr<NodeData> nodeData) const
       nodeData = _converter(nodeData);
     }
 
-    _inNode->propagateData(nodeData, _inPortIndex);
+    _inNode->propagateData(nodeData, _inPortIndex, id());
   }
 }
 
