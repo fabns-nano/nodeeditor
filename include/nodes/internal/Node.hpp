@@ -123,6 +123,10 @@ public Q_SLOTS: // data propagation
   void
   onDataUpdated(PortIndex index);
 
+  /// Propagates empty data to the attached connection.
+  void
+  onDataInvalidated(PortIndex index);
+
   /// update the graphic part if the size of the embeddedwidget changes
   void
   onNodeSizeUpdated();
@@ -130,19 +134,16 @@ public Q_SLOTS: // data propagation
 private:
 
   // addressing
-
   QUuid _uid;
 
   std::weak_ptr<NodeGroup> _nodeGroup{};
 
   // data
-
   std::unique_ptr<NodeDataModel> _nodeDataModel;
 
   NodeState _nodeState;
 
   // painting
-
   NodeGeometry _nodeGeometry;
 
   std::unique_ptr<NodeGraphicsObject> _nodeGraphicsObject;
