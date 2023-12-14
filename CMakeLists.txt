@@ -121,10 +121,7 @@ target_compile_options(nodes
     $<$<PLATFORM_ID:Linux,Darwin>:-fPIC>
 )
 
-target_compile_features(nodes
-  PUBLIC
-    cxx_generic_lambdas # Require C++14
-)
+target_compile_features(nodes PUBLIC cxx_std_14)
 
 set_target_properties(nodes
   PROPERTIES
