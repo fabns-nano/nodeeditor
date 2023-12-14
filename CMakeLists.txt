@@ -136,7 +136,10 @@ target_compile_options(nodes
     $<$<PLATFORM_ID:Linux,Darwin>:-fPIC>
 )
 
-target_compile_features(nodes PUBLIC cxx_std_14)
+if(NE_DEVELOPER_DEFAULTS)
+  target_compile_features(nodes PUBLIC cxx_std_14)
+  set_target_properties(nodes PROPERTIES CXX_EXTENSIONS OFF)
+endif()
 
 set_target_properties(nodes
   PROPERTIES
