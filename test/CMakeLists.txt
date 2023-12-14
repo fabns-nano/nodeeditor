@@ -13,6 +13,9 @@ add_executable(test_nodes
   src/TestFlowScene.cpp
   src/TestNodeGroup.cpp
   src/TestNodeGraphicsObject.cpp
+  include/ApplicationSetup.hpp
+  include/Stringify.hpp
+  include/StubNodeDataModel.hpp
 )
 
 target_include_directories(test_nodes
