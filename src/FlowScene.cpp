@@ -4,7 +4,6 @@
 #include <unordered_set>
 #include <utility>
 
-
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
 #include <QtCore/QDataStream>
@@ -13,14 +12,12 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGraphicsSceneMoveEvent>
 
-
 #include <QDir>
 #include <QtCore/QDebug>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QtGlobal>
-
 
 #include "Node.hpp"
 #include "NodeGraphicsObject.hpp"
@@ -33,7 +30,6 @@
 
 #include "DataModelRegistry.hpp"
 #include "FlowView.hpp"
-
 
 using QtNodes::Connection;
 using QtNodes::DataModelRegistry;
