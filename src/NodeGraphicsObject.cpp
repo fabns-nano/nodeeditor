@@ -3,10 +3,8 @@
 #include <cstdlib>
 #include <iostream>
 
-
 #include <QtWidgets/QGraphicsEffect>
 #include <QtWidgets/QtWidgets>
-
 
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionState.hpp"
@@ -18,10 +16,8 @@
 #include "NodeConnectionInteraction.hpp"
 #include "NodeDataModel.hpp"
 
-
 #include "GroupGraphicsObject.hpp"
 #include "NodeGroup.hpp"
-
 
 #include "StyleCollection.hpp"
 
@@ -169,123 +165,125 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
   if (_locked) {
     _scene.clearSelection();
     return;
-  }
-  // deselect all other items after this one is selected
-  if (!isSelected() && !(event->modifiers() & Qt::ControlModifier)) {
-    _scene.clearSelection();
-  }
 
-  for (PortType portToCheck : {PortType::In, PortType::Out}) {
-    NodeGeometry const& nodeGeometry = _node.nodeGeometry();
+    for (PortType portToCheck : {PortType::In, PortType::Out}) {
+      NodeGeometry const& nodeGeometry = _node.nodeGeometry();
 
-    // TODO do not pass sceneTransform
-    int const portIndex = nodeGeometry.checkHitScenePoint(
-        portToCheck, event->scenePos(), sceneTransform());
+      // TODO do not pass sceneTransform
+      int const portIndex = nodeGeometry.checkHitScenePoint(
+          portToCheck, event->scenePos(), sceneTransform());
 
-    if (portIndex != INVALID) {
-      NodeState const& nodeState = _node.nodeState();
+      if (portIndex != INVALID) {
+        NodeState const& nodeState = _node.nodeState();
 
-      std::unordered_map<QUuid, Connection*> connections =
-          nodeState.connections(portToCheck, portIndex);
+        std::unordered_map<QUuid, Connection*> connections =
+            nodeState.connections(portToCheck, portIndex);
 
-      // start dragging existing connection
-      if (!connections.empty() && portToCheck == PortType::In) {
-        auto con = connections.begin()->second;
+        // start dragging existing connection
+        if (!connections.empty() && portToCheck == PortType::In) {
+          auto con = connections.begin()->second;
 
-        NodeConnectionInteraction interaction(_node, *con, _scene);
+          NodeConnectionInteraction interaction(_node, *con, _scene);
 
-        interaction.disconnect(portToCheck);
-      } else  // initialize new Connection
-      {
-        if (portToCheck == PortType::Out) {
-          auto const outPolicy =
-              _node.nodeDataModel()->portOutConnectionPolicy(portIndex);
-          if (!connections.empty() &&
-              outPolicy == NodeDataModel::ConnectionPolicy::One) {
-            _scene.deleteConnection(*connections.begin()->second);
+          interaction.disconnect(portToCheck);
+        } else  // initialize new Connection
+        {
+          if (portToCheck == PortType::Out) {
+            auto const outPolicy =
+                _node.nodeDataModel()->portOutConnectionPolicy(portIndex);
+            if (!connections.empty() &&
+                outPolicy == NodeDataModel::ConnectionPolicy::One) {
+              _scene.deleteConnection(*connections.begin()->second);
+            }
           }
+
+          // todo add to FlowScene
+          auto connection =
+              _scene.createConnection(portToCheck, _node, portIndex);
+
+          _node.nodeState().setConnection(portToCheck, portIndex, *connection);
+
+          connection->getConnectionGraphicsObject().grabMouse();
         }
-
-        // todo add to FlowScene
-        auto connection =
-            _scene.createConnection(portToCheck, _node, portIndex);
-
-        _node.nodeState().setConnection(portToCheck, portIndex, *connection);
-
-        connection->getConnectionGraphicsObject().grabMouse();
       }
     }
-  }
 
-  auto pos = event->pos();
-  auto& geom = _node.nodeGeometry();
-  auto& state = _node.nodeState();
+    auto pos = event->pos();
+    auto& geom = _node.nodeGeometry();
+    auto& state = _node.nodeState();
 
-  if (_node.nodeDataModel()->resizable() &&
-      geom.resizeRect().contains(QPoint(pos.x(), pos.y()))) {
-    state.setResizing(true);
-  }
-}
-
-void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
-  auto& geom = _node.nodeGeometry();
-  auto& state = _node.nodeState();
-
-  auto diff = event->pos() - event->lastPos();
-
-  if (state.resizing()) {
-    if (auto w = _node.nodeDataModel()->embeddedWidget()) {
-      prepareGeometryChange();
-
-      auto oldSize = w->size();
-
-      oldSize += QSize(diff.x(), diff.y());
-
-      w->setFixedSize(oldSize);
-
-      _proxyWidget->setMinimumSize(oldSize);
-      _proxyWidget->setMaximumSize(oldSize);
-      _proxyWidget->setPos(geom.widgetPosition());
-
-      geom.recalculateSize();
-      update();
-
-      moveConnections();
-
-      event->accept();
+    if (_node.nodeDataModel()->resizable() &&
+        geom.resizeRect().contains(QPoint(pos.x(), pos.y()))) {
+      state.setResizing(true);
     }
-  } else {
-    QGraphicsObject::mouseMoveEvent(event);
+  }
 
-    if (event->lastPos() != event->pos()) {
-      if (auto nodeGroup = node().nodeGroup().lock(); nodeGroup) {
-        nodeGroup->groupGraphicsObject().moveConnections();
-        if (nodeGroup->groupGraphicsObject().locked()) {
-          nodeGroup->groupGraphicsObject().moveNodes(diff);
-        }
-      } else {
+  void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
+    auto& geom = _node.nodeGeometry();
+    auto& state = _node.nodeState();
+
+    // deselect all other items after this one is selected
+    if (!isSelected()) {
+      _scene.clearSelection();
+      setSelected(true);
+    }
+
+    auto diff = event->pos() - event->lastPos();
+
+    if (state.resizing()) {
+      if (auto w = _node.nodeDataModel()->embeddedWidget()) {
+        prepareGeometryChange();
+
+        auto oldSize = w->size();
+
+        oldSize += QSize(diff.x(), diff.y());
+
+        w->setFixedSize(oldSize);
+
+        _proxyWidget->setMinimumSize(oldSize);
+        _proxyWidget->setMaximumSize(oldSize);
+        _proxyWidget->setPos(geom.widgetPosition());
+
+        geom.recalculateSize();
+        update();
+
         moveConnections();
-        /// if it intersects with a group, expand group
-        QList<QGraphicsItem*> overlapItems = collidingItems();
-        for (auto& item : overlapItems) {
-          auto ggo = qgraphicsitem_cast<GroupGraphicsObject*>(item);
-          if (ggo != nullptr) {
-            if (!ggo->locked()) {
-              if (!_draggingIntoGroup) {
-                _draggingIntoGroup = true;
-                _possibleGroup = ggo;
-                _originalGroupSize =
-                    _possibleGroup->mapRectToScene(ggo->rect());
-                _possibleGroup->setPossibleChild(this);
-                break;
-              } else {
-                if (ggo == _possibleGroup) {
-                  if (!boundingRect().intersects(
-                          mapRectFromScene(_originalGroupSize))) {
-                    _draggingIntoGroup = false;
-                    _originalGroupSize = QRectF();
-                    _possibleGroup->unsetPossibleChild();
-                    _possibleGroup = nullptr;
+
+        event->accept();
+      }
+    } else {
+      QGraphicsObject::mouseMoveEvent(event);
+
+      if (event->lastPos() != event->pos()) {
+        if (auto nodeGroup = node().nodeGroup().lock(); nodeGroup) {
+          nodeGroup->groupGraphicsObject().moveConnections();
+          if (nodeGroup->groupGraphicsObject().locked()) {
+            nodeGroup->groupGraphicsObject().moveNodes(diff);
+          }
+        } else {
+          moveConnections();
+          /// if it intersects with a group, expand group
+          QList<QGraphicsItem*> overlapItems = collidingItems();
+          for (auto& item : overlapItems) {
+            auto ggo = qgraphicsitem_cast<GroupGraphicsObject*>(item);
+            if (ggo != nullptr) {
+              if (!ggo->locked()) {
+                if (!_draggingIntoGroup) {
+                  _draggingIntoGroup = true;
+                  _possibleGroup = ggo;
+                  _originalGroupSize =
+                      _possibleGroup->mapRectToScene(ggo->rect());
+                  _possibleGroup->setPossibleChild(this);
+                  break;
+                } else {
+                  if (ggo == _possibleGroup) {
+                    if (!boundingRect().intersects(
+                            mapRectFromScene(_originalGroupSize))) {
+                      _draggingIntoGroup = false;
+                      _originalGroupSize = QRectF();
+                      _possibleGroup->unsetPossibleChild();
+                      _possibleGroup = nullptr;
+                    }
                   }
                 }
               }
@@ -293,89 +291,88 @@ void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
           }
         }
       }
+      event->ignore();
     }
-    event->ignore();
-  }
-  QRectF r = scene()->sceneRect();
+    QRectF r = scene()->sceneRect();
 
-  r = r.united(mapToScene(boundingRect()).boundingRect());
+    r = r.united(mapToScene(boundingRect()).boundingRect());
 
-  scene()->setSceneRect(r);
-}
-
-void NodeGraphicsObject::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
-  auto& state = _node.nodeState();
-
-  state.setResizing(false);
-
-  QGraphicsObject::mouseReleaseEvent(event);
-
-  // position connections precisely after fast node move
-  moveConnections();
-
-  if (_draggingIntoGroup && _possibleGroup && !node().isInGroup()) {
-    _scene.addNodeToGroup(node().id(), _possibleGroup->group().id());
-    _possibleGroup->unsetPossibleChild();
-    _draggingIntoGroup = false;
-    _originalGroupSize = QRectF();
+    scene()->setSceneRect(r);
   }
 
-  QGraphicsItem::mouseReleaseEvent(event);
-  _scene.nodeClicked(node());
-}
+  void NodeGraphicsObject::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
+    auto& state = _node.nodeState();
 
-void NodeGraphicsObject::hoverEnterEvent(QGraphicsSceneHoverEvent* event) {
-  // bring all the colliding nodes to background
-  QList<QGraphicsItem*> overlapItems = collidingItems();
+    state.setResizing(false);
 
-  for (QGraphicsItem* item : overlapItems) {
-    if (auto group = qgraphicsitem_cast<GroupGraphicsObject*>(item)) {
-      Q_UNUSED(group);
-      continue;
+    QGraphicsObject::mouseReleaseEvent(event);
+
+    // position connections precisely after fast node move
+    moveConnections();
+
+    if (_draggingIntoGroup && _possibleGroup && !node().isInGroup()) {
+      _scene.addNodeToGroup(node().id(), _possibleGroup->group().id());
+      _possibleGroup->unsetPossibleChild();
+      _draggingIntoGroup = false;
+      _originalGroupSize = QRectF();
     }
-    if (item->zValue() > 0.0) {
-      item->setZValue(0.0);
+
+    QGraphicsItem::mouseReleaseEvent(event);
+    _scene.nodeClicked(node());
+  }
+
+  void NodeGraphicsObject::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+    // bring all the colliding nodes to background
+    QList<QGraphicsItem*> overlapItems = collidingItems();
+
+    for (QGraphicsItem* item : overlapItems) {
+      if (auto group = qgraphicsitem_cast<GroupGraphicsObject*>(item)) {
+        Q_UNUSED(group);
+        continue;
+      }
+      if (item->zValue() > 0.0) {
+        item->setZValue(0.0);
+      }
     }
+
+    // bring this node forward
+    setZValue(1.0);
+
+    _node.nodeGeometry().setHovered(true);
+    update();
+    _scene.nodeHovered(node(), event->screenPos());
+    event->accept();
   }
 
-  // bring this node forward
-  setZValue(1.0);
-
-  _node.nodeGeometry().setHovered(true);
-  update();
-  _scene.nodeHovered(node(), event->screenPos());
-  event->accept();
-}
-
-void NodeGraphicsObject::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
-  _node.nodeGeometry().setHovered(false);
-  update();
-  _scene.nodeHoverLeft(node());
-  event->accept();
-}
-
-void NodeGraphicsObject::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
-  auto pos = event->pos();
-  auto& geom = _node.nodeGeometry();
-
-  if (_node.nodeDataModel()->resizable() &&
-      geom.resizeRect().contains(QPoint(pos.x(), pos.y()))) {
-    setCursor(QCursor(Qt::SizeFDiagCursor));
-  } else {
-    setCursor(QCursor());
+  void NodeGraphicsObject::hoverLeaveEvent(QGraphicsSceneHoverEvent * event) {
+    _node.nodeGeometry().setHovered(false);
+    update();
+    _scene.nodeHoverLeft(node());
+    event->accept();
   }
 
-  event->accept();
-}
+  void NodeGraphicsObject::hoverMoveEvent(QGraphicsSceneHoverEvent * event) {
+    auto pos = event->pos();
+    auto& geom = _node.nodeGeometry();
 
-void NodeGraphicsObject::mouseDoubleClickEvent(
-    QGraphicsSceneMouseEvent* event) {
-  QGraphicsItem::mouseDoubleClickEvent(event);
+    if (_node.nodeDataModel()->resizable() &&
+        geom.resizeRect().contains(QPoint(pos.x(), pos.y()))) {
+      setCursor(QCursor(Qt::SizeFDiagCursor));
+    } else {
+      setCursor(QCursor());
+    }
 
-  _scene.nodeDoubleClicked(node());
-}
+    event->accept();
+  }
 
-void NodeGraphicsObject::contextMenuEvent(
-    QGraphicsSceneContextMenuEvent* event) {
-  _scene.nodeContextMenu(node(), mapToScene(event->pos()));
-}
+  void NodeGraphicsObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *
+                                                 event) {
+    QGraphicsItem::mouseDoubleClickEvent(event);
+
+    _scene.nodeDoubleClicked(node());
+  }
+
+  void NodeGraphicsObject::contextMenuEvent(QGraphicsSceneContextMenuEvent *
+                                            event) {
+    _scene.nodeContextMenu(node(), mapToScene(event->pos()));
+  }
