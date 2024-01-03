@@ -6,7 +6,6 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QStyleOptionGraphicsItem>
 
-
 #include <QtCore/QDebug>
 
 #include "AbstractGraphModel.hpp"
@@ -135,10 +134,6 @@ void ConnectionGraphicsObject::setEndPoint(PortType portType,
     _out = point;
 }
 
-void ConnectionGraphicsObject::setGeometryChanged() {
-  prepareGeometryChange();
-}
-
 void ConnectionGraphicsObject::move() {
   auto moveEnd = [this](ConnectionId cId, PortType portType) {
     NodeId nodeId = getNodeId(portType, cId);
@@ -161,7 +156,7 @@ void ConnectionGraphicsObject::move() {
   moveEnd(_connectionId, PortType::Out);
   moveEnd(_connectionId, PortType::In);
 
-  setGeometryChanged();
+  prepareGeometryChange();
 
   update();
 }
@@ -196,27 +191,11 @@ void ConnectionGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   auto view = static_cast<QGraphicsView*>(event->widget());
   auto ngo = locateNodeAt(event->scenePos(), *nodeScene(), view->transform());
   if (ngo) {
-    _connectionState.interactWithNode(ngo->nodeId());
+    ngo->reactToConnection(this);
 
-    PortType knownPortType = oppositePort(_connectionState.requiredPort());
-
-    NodeId knownNodeId = (knownPortType == PortType::Out)
-                             ? std::get<0>(_connectionId)
-                             : std::get<2>(_connectionId);
-
-    PortIndex knownPortIndex = (knownPortType == PortType::Out)
-                                   ? std::get<1>(_connectionId)
-                                   : std::get<3>(_connectionId);
-
-    NodeDataType knownDataType =
-        _graphModel
-            .portData(knownNodeId, knownPortType, knownPortIndex,
-                      PortRole::DataType)
-            .value<NodeDataType>();
-
-    // Sets node's mouse dragging position in nodes coordinates.
-    ngo->nodeState().reactToPossibleConnection(
-        _connectionState.requiredPort(), knownDataType, event->scenePos());
+    _connectionState.setLastHoveredNode(ngo->nodeId());
+  } else {
+    _connectionState.resetLastHoveredNode();
   }
 
   //-------------------

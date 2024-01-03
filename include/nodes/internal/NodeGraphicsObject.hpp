@@ -34,6 +34,7 @@ class NodeGraphicsObject : public QGraphicsObject {
   NodeId nodeId() const { return _nodeId; }
 
   NodeState& nodeState() { return _nodeState; }
+
   NodeState const& nodeState() const { return _nodeState; }
 
   QRectF boundingRect() const override;
@@ -49,6 +50,9 @@ class NodeGraphicsObject : public QGraphicsObject {
    * the node's geometry and ports.
    */
   void updateGeometry();
+
+  /// Repaints the node once with reacting ports.
+  void reactToConnection(ConnectionGraphicsObject const* cgo);
 
  protected:
   void paint(QPainter* painter,
@@ -78,8 +82,6 @@ class NodeGraphicsObject : public QGraphicsObject {
   void embedQWidget();
 
   // private Q_SLOTS:
-
-  // void onNodeSizeUpdated();
 
  private:
   NodeId _nodeId;

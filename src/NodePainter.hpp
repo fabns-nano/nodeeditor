@@ -18,22 +18,22 @@ class NodePainter {
   NodePainter();
 
  public:
-  static void paint(QPainter* painter, NodeGraphicsObject const& ngo);
+  static void paint(QPainter* painter, NodeGraphicsObject& ngo);
 
-  static void drawNodeRect(QPainter* painter, NodeGraphicsObject const& ngo);
+  static void drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo);
 
-  static void drawConnectionPoints(QPainter* painter,
-                                   NodeGraphicsObject const& ngo);
-  static void drawModelNickname(QPainter* painter,
-                                NodeGraphicsObject const& ngo);
+  static void drawConnectionPoints(QPainter* painter, NodeGraphicsObject& ngo);
   static void drawFilledConnectionPoints(QPainter* painter,
-                                         NodeGraphicsObject const& ngo);
+                                         NodeGraphicsObject& ngo);
 
-  static void drawNodeCaption(QPainter* painter, NodeGraphicsObject const& ngo);
+  static void drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo);
 
   static void drawEntryLabels(QPainter* painter, NodeGraphicsObject const& ngo);
 
   static void drawResizeRect(QPainter* painter, NodeGraphicsObject const& ngo);
+
+  static void drawModelNickname(QPainter* painter,
+                                NodeGraphicsObject const& ngo);
 
   /**
    * @brief Draws the icon indicating the node's current processing status.

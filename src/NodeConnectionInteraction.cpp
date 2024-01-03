@@ -80,7 +80,7 @@ bool NodeConnectionInteraction::tryConnect() const {
   // 3. Adjust Connection geometry.
 
   //_ngo.moveConnections();
-  _ngo.nodeState().resetReactionToConnection();
+  //_ngo.nodeState().resetReactionToConnection();
 
   AbstractGraphModel& model = _ngo.nodeScene()->graphModel();
 

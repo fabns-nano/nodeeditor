@@ -85,7 +85,7 @@ void NodeGraphicsObject::embedQWidget() {
     if (w->sizePolicy().verticalPolicy() & QSizePolicy::ExpandFlag) {
       // If the widget wants to use as much vertical space as possible, set
       // it to have the geom's equivalentWidgetHeight.
-      _proxyWidget->setMinimumHeight(geom.equivalentWidgetHeight());
+      _proxyWidget->setMinimumHeight(geom.maxInitialWidgetHeight());
     }
 
     _proxyWidget->setPos(geom.widgetPosition());
@@ -155,6 +155,13 @@ void NodeGraphicsObject::moveConnections() const {
 
   moveConns(PortType::In, NodeRole::NumberOfInPorts);
   moveConns(PortType::Out, NodeRole::NumberOfOutPorts);
+}
+
+void NodeGraphicsObject::reactToConnection(
+    ConnectionGraphicsObject const* cgo) {
+  _nodeState.storeConnectionForReaction(cgo);
+
+  update();
 }
 
 void NodeGraphicsObject::paint(QPainter* painter,

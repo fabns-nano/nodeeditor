@@ -64,7 +64,7 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
 
   /// Returns the maximum height a widget can be without causing the node to
   /// grow.
-  int equivalentWidgetHeight() const;
+  int maxInitialWidgetHeight() const;
 
   // unsigned int validationHeight() const;
 
@@ -114,10 +114,9 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
   NodeGraphicsObject const& _ngo;
   AbstractGraphModel& _graphModel;
 
-  // some variables are mutable because
-  // we need to change drawing metrics
-  // corresponding to fontMetrics
-  // but this doesn't change constness of Node
+  // Some variables are mutable because we need to change drawing
+  // metrics corresponding to fontMetrics but this doesn't change
+  // constness of the Node.
 
   mutable unsigned int _defaultInPortWidth;
   mutable unsigned int _defaultOutPortWidth;

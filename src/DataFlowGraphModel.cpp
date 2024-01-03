@@ -85,7 +85,8 @@ NodeId DataFlowGraphModel::addNode(QString const nodeType) {
   return InvalidNodeId;
 }
 
-bool DataFlowGraphModel::connectionPossible(ConnectionId const connectionId) {
+bool DataFlowGraphModel::connectionPossible(
+    ConnectionId const connectionId) const {
   auto getDataType = [&](PortType const portType) {
     return portData(getNodeId(portType, connectionId), portType,
                     getPortIndex(portType, connectionId), PortRole::DataType)

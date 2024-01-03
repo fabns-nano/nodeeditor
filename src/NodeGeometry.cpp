@@ -59,18 +59,6 @@ unsigned int NodeGeometry::verticalSpacing() const {
   return _verticalSpacing;
 }
 
-// QRectF
-// NodeGeometry::
-// entryBoundingRect() const
-//{
-// double const addon = 0.0;
-
-// return QRectF(0 - addon,
-// 0 - addon,
-//_entryWidth + 2 * addon,
-//_entryHeight + 2 * addon);
-// }
-
 QRectF NodeGeometry::boundingRect() const {
   NodeId nodeId = _ngo.nodeId();
 
@@ -275,14 +263,11 @@ QPointF NodeGeometry::widgetPosition() const {
   return QPointF();
 }
 
-int NodeGeometry::equivalentWidgetHeight() const {
+int NodeGeometry::maxInitialWidgetHeight() const {
   QSize size =
       _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
-  // if (_dataModel->validationState() != NodeValidationState::Valid)
-  //{
-  // return height() - captionHeight() + validationHeight();
-  // }
-  return size.height() - captionHeight() - nicknameHeight();
+
+  return size.height() - captionHeight();
 }
 
 unsigned int NodeGeometry::captionHeight() const {

@@ -39,7 +39,7 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
 
   NodeId addNode(QString const nodeType) override;
 
-  bool connectionPossible(ConnectionId const connectionId) override;
+  bool connectionPossible(ConnectionId const connectionId) const override;
 
   void addConnection(ConnectionId const connectionId) override;
 

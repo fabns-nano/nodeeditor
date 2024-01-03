@@ -35,8 +35,6 @@ class ConnectionGraphicsObject : public QGraphicsObject {
   ~ConnectionGraphicsObject() = default;
 
  public:
-  void initializePosition();
-
   AbstractGraphModel& graphModel() const;
 
   BasicGraphicsScene* nodeScene() const;
@@ -57,12 +55,11 @@ class ConnectionGraphicsObject : public QGraphicsObject {
 
   void setEndPoint(PortType portType, QPointF const& point);
 
-  void setGeometryChanged();
-
   /// Updates the position of both ends
   void move();
 
   ConnectionState const& connectionState() const;
+
   ConnectionState& connectionState();
 
  protected:
@@ -81,6 +78,8 @@ class ConnectionGraphicsObject : public QGraphicsObject {
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
  private:
+  void initializePosition();
+
   void addGraphicsEffect();
 
  private:
