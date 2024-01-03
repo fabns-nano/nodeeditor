@@ -67,8 +67,8 @@ inline bool isPortTypeValid(PortType portType) {
  * Creates a connection Id instance filled just on one side.
  */
 inline ConnectionId makeIncompleteConnectionId(
-    PortType const connectedPort,
     NodeId const connectedNodeId,
+    PortType const connectedPort,
     PortIndex const connectedPortIndex) {
   return (connectedPort == PortType::In)
              ? ConnectionId{InvalidNodeId, InvalidPortIndex, connectedNodeId,
