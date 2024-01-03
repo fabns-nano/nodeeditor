@@ -82,6 +82,10 @@ class ConnectionGraphicsObject : public QGraphicsObject {
 
   void addGraphicsEffect();
 
+  std::pair<QPointF, QPointF> pointsC1C2Horizontal() const;
+
+  std::pair<QPointF, QPointF> pointsC1C2Vertical() const;
+
  private:
   ConnectionId _connectionId;
 
@@ -89,8 +93,8 @@ class ConnectionGraphicsObject : public QGraphicsObject {
 
   ConnectionState _connectionState;
 
-  QPointF _out;
-  QPointF _in;
+  mutable QPointF _out;
+  mutable QPointF _in;
 };
 
 }  // namespace QtNodes

@@ -7,11 +7,11 @@
 #include <QtWidgets/QtWidgets>
 
 #include "AbstractGraphModel.hpp"
+#include "AbstractNodeGeometry.hpp"
 #include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
 #include "NodeConnectionInteraction.hpp"
-#include "NodeGeometry.hpp"
 #include "NodePainter.hpp"
 #include "StyleCollection.hpp"
 #include "UndoCommands.hpp"
@@ -55,10 +55,10 @@ NodeGraphicsObject::NodeGraphicsObject(BasicGraphicsScene& scene, NodeId nodeId)
 
   embedQWidget();
 
-  NodeGeometry(_nodeId, _graphModel).recalculateSize();
+  nodeScene()->nodeGeometry().recomputeSize(_nodeId);
 
   QPointF const pos =
-      _graphModel.nodeData(_nodeId, NodeRole::Position).value<QPointF>();
+      _graphModel.nodeData<QPointF>(_nodeId, NodeRole::Position);
 
   setPos(pos);
 }
@@ -72,7 +72,8 @@ BasicGraphicsScene* NodeGraphicsObject::nodeScene() const {
 }
 
 void NodeGraphicsObject::embedQWidget() {
-  NodeGeometry geom(_nodeId, _graphModel);
+  AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
+  geometry.recomputeSize(_nodeId);
 
   if (auto w =
           _graphModel.nodeData(_nodeId, NodeRole::Widget).value<QWidget*>()) {
@@ -82,15 +83,18 @@ void NodeGraphicsObject::embedQWidget() {
 
     _proxyWidget->setPreferredWidth(5);
 
-    NodeGeometry(_nodeId, _graphModel).recalculateSize();
+    geometry.recomputeSize(_nodeId);
 
     if (w->sizePolicy().verticalPolicy() & QSizePolicy::ExpandFlag) {
+      unsigned int widgetHeight = geometry.size(_nodeId).height() -
+                                  geometry.captionRect(_nodeId).height();
+
       // If the widget wants to use as much vertical space as possible, set
       // it to have the geom's equivalentWidgetHeight.
-      _proxyWidget->setMinimumHeight(geom.maxInitialWidgetHeight());
+      _proxyWidget->setMinimumHeight(widgetHeight);
     }
 
-    _proxyWidget->setPos(geom.widgetPosition());
+    _proxyWidget->setPos(geometry.widgetPosition(_nodeId));
 
     // update();
 
@@ -99,33 +103,10 @@ void NodeGraphicsObject::embedQWidget() {
   }
 }
 
-#if 0
-void
-NodeGraphicsObject::
-onNodeSizeUpdated()
-{
-  if (nodeDataModel()->embeddedWidget())
-  {
-    nodeDataModel()->embeddedWidget()->adjustSize();
-  }
-  nodeGeometry().recalculateSize();
-  for (PortType type: {PortType::In, PortType::Out})
-  {
-    for (auto& conn_set : nodeState().getEntries(type))
-    {
-      for (auto& pair: conn_set)
-      {
-        Connection* conn = pair.second;
-        conn->getConnectionGraphicsObject().move();
-      }
-    }
-  }
-}
-
-#endif
-
 QRectF NodeGraphicsObject::boundingRect() const {
-  return NodeGeometry(_nodeId, _graphModel).boundingRect();
+  AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
+  return geometry.boundingRect(_nodeId);
+  // return NodeGeometry(_nodeId, _graphModel, nodeScene()).boundingRect();
 }
 
 void NodeGraphicsObject::setGeometryChanged() {
@@ -171,11 +152,13 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
   // if (_nodeState.locked())
   // return;
 
-  for (PortType portToCheck : {PortType::In, PortType::Out}) {
-    NodeGeometry nodeGeometry(_nodeId, _graphModel);
+  AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
 
-    PortIndex const portIndex = nodeGeometry.checkHitScenePoint(
-        portToCheck, event->scenePos(), sceneTransform());
+  for (PortType portToCheck : {PortType::In, PortType::Out}) {
+    QPointF nodeCoord = sceneTransform().inverted().map(event->scenePos());
+
+    PortIndex const portIndex =
+        geometry.checkPortHit(_nodeId, portToCheck, nodeCoord);
 
     if (portIndex != InvalidPortIndex) {
       auto const& connected =
@@ -215,10 +198,9 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
   }
 
   if (_graphModel.nodeFlags(_nodeId) & NodeFlag::Resizable) {
-    NodeGeometry geometry(_nodeId, _graphModel);
-
     auto pos = event->pos();
-    bool const hit = geometry.resizeRect().contains(QPoint(pos.x(), pos.y()));
+    bool const hit =
+        geometry.resizeHandleRect(_nodeId).contains(QPoint(pos.x(), pos.y()));
     _nodeState.setResizing(hit);
   }
 }
@@ -243,14 +225,14 @@ void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 
       w->setFixedSize(oldSize);
 
-      NodeGeometry geometry(_nodeId, _graphModel);
+      AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
 
       _proxyWidget->setMinimumSize(oldSize);
       _proxyWidget->setMaximumSize(oldSize);
-      _proxyWidget->setPos(geometry.widgetPosition());
+      _proxyWidget->setPos(geometry.widgetPosition(_nodeId));
 
       // Passes the new size to the model.
-      geometry.recalculateSize();
+      geometry.recomputeSize(_nodeId);
 
       update();
 
@@ -328,10 +310,11 @@ void NodeGraphicsObject::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
 void NodeGraphicsObject::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
   auto pos = event->pos();
 
-  NodeGeometry geometry(_nodeId, _graphModel);
+  // NodeGeometry geometry(_nodeId, _graphModel, nodeScene());
+  AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
 
   if ((_graphModel.nodeFlags(_nodeId) | NodeFlag::Resizable) &&
-      geometry.resizeRect().contains(QPoint(pos.x(), pos.y()))) {
+      geometry.resizeHandleRect(_nodeId).contains(QPoint(pos.x(), pos.y()))) {
     setCursor(QCursor(Qt::SizeFDiagCursor));
   } else {
     setCursor(QCursor());

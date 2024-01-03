@@ -51,8 +51,8 @@ static void debugDrawing(QPainter* painter,
   Q_UNUSED(painter);
 
   {
-    QPointF const& out = geom.out();
-    QPointF const& in = geom.in();
+    QPointF const& in = cgo.endPoint(PortType::In);
+    QPointF const& out = cgo.endPoint(PortType::Out);
 
     auto const points = cgo.pointsC1C2();
 
@@ -71,7 +71,7 @@ static void debugDrawing(QPainter* painter,
 
   {
     painter->setPen(Qt::yellow);
-    painter->drawRect(geom.boundingRect());
+    painter->drawRect(cgo.boundingRect());
   }
 }
 

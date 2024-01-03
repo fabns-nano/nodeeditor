@@ -188,11 +188,11 @@ QVariant DataFlowGraphModel::nodeData(NodeId nodeId, NodeRole role) const {
       break;
     }
 
-    case NodeRole::NumberOfInPorts:
+    case NodeRole::InPortCount:
       result = model->nPorts(PortType::In);
       break;
 
-    case NodeRole::NumberOfOutPorts:
+    case NodeRole::OutPortCount:
       result = model->nPorts(PortType::Out);
       break;
 
@@ -260,10 +260,10 @@ bool DataFlowGraphModel::setNodeData(NodeId nodeId,
     case NodeRole::InternalData:
       break;
 
-    case NodeRole::NumberOfInPorts:
+    case NodeRole::InPortCount:
       break;
 
-    case NodeRole::NumberOfOutPorts:
+    case NodeRole::OutPortCount:
       break;
 
     case NodeRole::Widget:

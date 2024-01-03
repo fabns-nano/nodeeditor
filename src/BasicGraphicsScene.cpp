@@ -1,11 +1,13 @@
 #include "BasicGraphicsScene.hpp"
 
+#include "AbstractNodeGeometry.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
+#include "DefaultHorizontalNodeGeometry.hpp"
+#include "DefaultVerticalNodeGeometry.hpp"
 #include "GraphicsView.hpp"
 #include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
-
 
 #include <QtGui/QUndoStack>
 
@@ -31,7 +33,10 @@ BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel& graphModel,
                                        QObject* parent)
     : QGraphicsScene(parent),
       _graphModel(graphModel),
-      _undoStack(new QUndoStack(this)) {
+      _nodeGeometry(
+          std::make_unique<DefaultHorizontalNodeGeometry>(_graphModel)),
+      _undoStack(new QUndoStack(this)),
+      _orientation(Qt::Horizontal) {
   setItemIndexMethod(QGraphicsScene::NoIndex);
 
   connect(&_graphModel, &AbstractGraphModel::connectionCreated, this,
@@ -52,6 +57,9 @@ BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel& graphModel,
   connect(&_graphModel, &AbstractGraphModel::nodeUpdated, this,
           &BasicGraphicsScene::onNodeUpdated);
 
+  connect(&_graphModel, &AbstractGraphModel::modelReset, this,
+          &BasicGraphicsScene::onModelReset);
+
   traverseGraphAndPopulateGraphicsObjects();
 }
 
@@ -63,6 +71,10 @@ AbstractGraphModel const& BasicGraphicsScene::graphModel() const {
 
 AbstractGraphModel& BasicGraphicsScene::graphModel() {
   return _graphModel;
+}
+
+AbstractNodeGeometry& BasicGraphicsScene::nodeGeometry() {
+  return *_nodeGeometry;
 }
 
 QUndoStack& BasicGraphicsScene::undoStack() {
@@ -113,6 +125,26 @@ ConnectionGraphicsObject* BasicGraphicsScene::connectionGraphicsObject(
   return cgo;
 }
 
+void BasicGraphicsScene::setOrientation(Qt::Orientation const orientation) {
+  if (_orientation != orientation) {
+    _orientation = orientation;
+
+    switch (_orientation) {
+      case Qt::Horizontal:
+        _nodeGeometry =
+            std::make_unique<DefaultHorizontalNodeGeometry>(_graphModel);
+        break;
+
+      case Qt::Vertical:
+        _nodeGeometry =
+            std::make_unique<DefaultVerticalNodeGeometry>(_graphModel);
+        break;
+    }
+
+    onModelReset();
+  }
+}
+
 QMenu* BasicGraphicsScene::createSceneMenu(QPointF const scenePos) {
   Q_UNUSED(scenePos);
   return nullptr;
@@ -139,7 +171,7 @@ void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
           std::make_unique<NodeGraphicsObject>(*this, nodeId);
 
       unsigned int nOutPorts =
-          _graphModel.nodeData(nodeId, NodeRole::NumberOfOutPorts).toUInt();
+          _graphModel.nodeData(nodeId, NodeRole::OutPortCount).toUInt();
 
       for (PortIndex index = 0; index < nOutPorts; ++index) {
         auto const& conns =
@@ -147,6 +179,7 @@ void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
 
         for (auto cn : conns) {
           fifo.push(cn.inNodeId);
+
           allNodeIds.erase(cn.inNodeId);
 
           connectionsToCreate.push_back(cn);
@@ -220,13 +253,20 @@ void BasicGraphicsScene::onNodeUpdated(NodeId const nodeId) {
   if (node) {
     node->setGeometryChanged();
 
-    NodeGeometry geometry(nodeId, _graphModel);
-
-    geometry.recalculateSize();
+    _nodeGeometry->recomputeSize(nodeId);
 
     node->update();
     node->moveConnections();
   }
+}
+
+void BasicGraphicsScene::onModelReset() {
+  _connectionGraphicsObjects.clear();
+  _nodeGraphicsObjects.clear();
+
+  clear();
+
+  traverseGraphAndPopulateGraphicsObjects();
 }
 
 }  // namespace QtNodes

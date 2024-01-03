@@ -6,10 +6,10 @@
 
 #include <iostream>
 
+#include "AbstractNodeGeometry.hpp"
 #include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
-#include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
 #include "UndoCommands.hpp"
 
@@ -91,11 +91,11 @@ bool NodeConnectionInteraction::disconnect(PortType portToDisconnect) const {
 
   _scene.undoStack().push(new DisconnectCommand(&_scene, connectionId));
 
-  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
+  AbstractNodeGeometry& geometry = _scene.nodeGeometry();
 
   QPointF scenePos = geometry.portScenePosition(
-      portToDisconnect, getPortIndex(portToDisconnect, connectionId),
-      _ngo.sceneTransform());
+      _ngo.nodeId(), portToDisconnect,
+      getPortIndex(portToDisconnect, connectionId), _ngo.sceneTransform());
 
   // Converted to "draft" connection with the new incomplete id.
   ConnectionId incompleteConnectionId =
@@ -130,10 +130,10 @@ PortType NodeConnectionInteraction::connectionRequiredPort() const {
 QPointF NodeConnectionInteraction::nodePortScenePosition(
     PortType portType,
     PortIndex portIndex) const {
-  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
+  AbstractNodeGeometry& geometry = _scene.nodeGeometry();
 
-  QPointF p =
-      geometry.portScenePosition(portType, portIndex, _ngo.sceneTransform());
+  QPointF p = geometry.portScenePosition(_ngo.nodeId(), portType, portIndex,
+                                         _ngo.sceneTransform());
 
   return p;
 }
@@ -141,13 +141,13 @@ QPointF NodeConnectionInteraction::nodePortScenePosition(
 PortIndex NodeConnectionInteraction::nodePortIndexUnderScenePoint(
     PortType portType,
     QPointF const& scenePoint) const {
-  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
+  AbstractNodeGeometry& geometry = _scene.nodeGeometry();
 
   QTransform sceneTransform = _ngo.sceneTransform();
 
-  PortIndex portIndex =
-      geometry.checkHitScenePoint(portType, scenePoint, sceneTransform);
-  return portIndex;
+  QPointF nodePoint = sceneTransform.inverted().map(scenePoint);
+
+  return geometry.checkPortHit(_ngo.nodeId(), portType, nodePoint);
 }
 
 }  // namespace QtNodes

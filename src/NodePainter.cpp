@@ -5,9 +5,10 @@
 #include <QtCore/QMargins>
 
 #include "AbstractGraphModel.hpp"
+#include "AbstractNodeGeometry.hpp"
+#include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
-#include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
 #include "NodeState.hpp"
 #include "StyleCollection.hpp"
@@ -15,8 +16,10 @@
 namespace QtNodes {
 
 void NodePainter::paint(QPainter* painter, NodeGraphicsObject& ngo) {
-  NodeGeometry geometry(ngo.nodeId(), ngo.graphModel());
-  geometry.recalculateSizeIfFontChanged(painter->font());
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
+
+  // TODO TODO TODO TODO
+  // geometry.recomputeSizeIfFontChanged(painter->font());
 
   drawNodeRect(painter, ngo);
 
@@ -37,9 +40,9 @@ void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
 
   NodeId const nodeId = ngo.nodeId();
 
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
-  QSize size = geom.size();
+  QSize size = geometry.size(nodeId);
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -92,7 +95,7 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
                                        NodeGraphicsObject& ngo) {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -106,12 +109,12 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
   for (PortType portType : {PortType::Out, PortType::In}) {
     size_t const n = model
                          .nodeData(nodeId, (portType == PortType::Out)
-                                               ? NodeRole::NumberOfOutPorts
-                                               : NodeRole::NumberOfInPorts)
+                                               ? NodeRole::OutPortCount
+                                               : NodeRole::InPortCount)
                          .toUInt();
 
     for (PortIndex portIndex = 0; portIndex < n; ++portIndex) {
-      QPointF p = geom.portNodePosition(portType, portIndex);
+      QPointF p = geometry.portPosition(nodeId, portType, portIndex);
 
       auto const& dataType =
           model.portData(nodeId, portType, portIndex, PortRole::DataType)
@@ -165,7 +168,7 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
                                              NodeGraphicsObject& ngo) {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -176,12 +179,12 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
   for (PortType portType : {PortType::Out, PortType::In}) {
     size_t const n = model
                          .nodeData(nodeId, (portType == PortType::Out)
-                                               ? NodeRole::NumberOfOutPorts
-                                               : NodeRole::NumberOfInPorts)
+                                               ? NodeRole::OutPortCount
+                                               : NodeRole::InPortCount)
                          .toUInt();
 
     for (PortIndex portIndex = 0; portIndex < n; ++portIndex) {
-      QPointF p = geom.portNodePosition(portType, portIndex);
+      QPointF p = geometry.portPosition(nodeId, portType, portIndex);
 
       auto const& connected = model.connections(nodeId, portType, portIndex);
 
@@ -209,7 +212,7 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
 void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
   if (!model.nodeData(nodeId, NodeRole::CaptionVisible).toBool())
     return;
@@ -220,19 +223,7 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
   font.setBold(!model.nodeData(nodeId, NodeRole::NicknameVisible).toBool());
   font.setItalic(model.nodeData(nodeId, NodeRole::NicknameVisible).toBool());
 
-  QFontMetrics metrics(font);
-  auto rect = metrics.boundingRect(name);
-
-  int nicknameOffset =
-      model.nodeData(nodeId, NodeRole::NicknameVisible).toBool() ? rect.height()
-                                                                 : 0;
-
-  double yPos =
-      (geom.verticalSpacing() + geom.entryHeight() + nicknameOffset) / 3.0;
-  if (model.nodeData(nodeId, NodeRole::NicknameVisible).toBool())
-    yPos += 2.0 * geom.verticalSpacing() / 3.0;
-
-  QPointF position((size.width() - rect.width()) / 2.0, yPos);
+  QPointF position = geometry.captionPosition(nodeId);
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -250,25 +241,21 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
 void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
   NodeStyle nodeStyle(json.object());
 
-  QSize size = geom.size();
-
   for (PortType portType : {PortType::Out, PortType::In}) {
-    size_t const n = model
-                         .nodeData(nodeId, (portType == PortType::Out)
-                                               ? NodeRole::NumberOfOutPorts
-                                               : NodeRole::NumberOfInPorts)
-                         .toUInt();
+    unsigned int n = model.nodeData<unsigned int>(
+        nodeId, (portType == PortType::Out) ? NodeRole::OutPortCount
+                                            : NodeRole::InPortCount);
 
     for (PortIndex portIndex = 0; portIndex < n; ++portIndex) {
       auto const& connected = model.connections(nodeId, portType, portIndex);
 
-      QPointF p = geom.portNodePosition(portType, portIndex);
+      QPointF p = geometry.portTextPosition(nodeId, portType, portIndex);
 
       if (connected.empty())
         painter->setPen(nodeStyle.FontColorFaded);
@@ -277,33 +264,15 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
 
       QString s;
 
-      if (model.portData(nodeId, portType, portIndex, PortRole::CaptionVisible)
-              .toBool()) {
-        s = model.portData(nodeId, portType, portIndex, PortRole::Caption)
-                .toString();
+      if (model.portData<bool>(nodeId, portType, portIndex,
+                               PortRole::CaptionVisible)) {
+        s = model.portData<QString>(nodeId, portType, portIndex,
+                                    PortRole::Caption);
       } else {
         auto portData =
             model.portData(nodeId, portType, portIndex, PortRole::DataType);
 
         s = portData.value<NodeDataType>().name;
-      }
-
-      QFontMetrics const& metrics = painter->fontMetrics();
-      auto rect = metrics.boundingRect(s);
-
-      p.setY(p.y() + rect.height() / 4.0);
-
-      switch (portType) {
-        case PortType::In:
-          p.setX(5.0);
-          break;
-
-        case PortType::Out:
-          p.setX(size.width() - 5.0 - rect.width());
-          break;
-
-        default:
-          break;
       }
 
       painter->drawText(p, s);
@@ -314,12 +283,12 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
 void NodePainter::drawResizeRect(QPainter* painter, NodeGraphicsObject& ngo) {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(nodeId, model);
+  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
   if (model.nodeFlags(nodeId) & NodeFlag::Resizable) {
     painter->setBrush(Qt::gray);
 
-    painter->drawEllipse(geom.resizeRect());
+    painter->drawEllipse(geometry.resizeHandleRect(nodeId));
   }
 }
 
