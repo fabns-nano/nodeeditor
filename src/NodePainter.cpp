@@ -227,10 +227,9 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
     for (PortIndex portIndex = 0; portIndex < n; ++portIndex) {
       QPointF p = geom.portNodePosition(portType, portIndex);
 
-      auto const& connectedNodes =
-          model.connectedNodes(nodeId, portType, portIndex);
+      auto const& connected = model.connections(nodeId, portType, portIndex);
 
-      if (!connectedNodes.empty()) {
+      if (!connected.empty()) {
         auto const& dataType =
             model.portData(nodeId, portType, portIndex, PortRole::DataType)
                 .value<NodeDataType>();
@@ -312,12 +311,11 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
                          .toUInt();
 
     for (PortIndex portIndex = 0; portIndex < n; ++portIndex) {
-      auto const& connectedNodes =
-          model.connectedNodes(nodeId, portType, portIndex);
+      auto const& connected = model.connections(nodeId, portType, portIndex);
 
       QPointF p = geom.portNodePosition(portType, portIndex);
 
-      if (connectedNodes.empty())
+      if (connected.empty())
         painter->setPen(nodeStyle.FontColorFaded);
       else
         painter->setPen(nodeStyle.FontColor);

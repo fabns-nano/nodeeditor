@@ -145,15 +145,14 @@ void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
           _graphModel.nodeData(nodeId, NodeRole::NumberOfOutPorts).toUInt();
 
       for (PortIndex index = 0; index < nOutPorts; ++index) {
-        auto connectedNodes =
-            _graphModel.connectedNodes(nodeId, PortType::Out, index);
+        auto const& conns =
+            _graphModel.connections(nodeId, PortType::Out, index);
 
-        for (auto cn : connectedNodes) {
-          fifo.push(cn.first);
-          allNodeIds.erase(cn.first);
+        for (auto cn : conns) {
+          fifo.push(cn.inNodeId);
+          allNodeIds.erase(cn.inNodeId);
 
-          ConnectionId connectionId{nodeId, index, cn.first, cn.second};
-          connectionsToCreate.push_back(connectionId);
+          connectionsToCreate.push_back(cn);
         }
       }
     }  // while

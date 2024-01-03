@@ -35,7 +35,7 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
   std::unordered_set<ConnectionId> allConnectionIds(
       NodeId const nodeId) const override;
 
-  std::unordered_set<std::pair<NodeId, PortIndex>> connectedNodes(
+  std::unordered_set<ConnectionId> connections(
       NodeId nodeId,
       PortType portType,
       PortIndex portIndex) const override;
