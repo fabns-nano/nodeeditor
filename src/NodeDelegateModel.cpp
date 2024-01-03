@@ -2,36 +2,26 @@
 
 #include "StyleCollection.hpp"
 
-namespace QtNodes
-{
+namespace QtNodes {
 
-NodeDelegateModel::
-NodeDelegateModel()
-  : _nodeStyle(StyleCollection::nodeStyle())
-{
+NodeDelegateModel::NodeDelegateModel()
+    : _nodeStyle(StyleCollection::nodeStyle()) {
   // Derived classes can initialize specific style here
 }
 
-
-QJsonObject
-NodeDelegateModel::
-save() const
-{
+QJsonObject NodeDelegateModel::save() const {
   QJsonObject modelJson;
 
   modelJson["name"] = name();
+  modelJson["nickname"] = nickname();
 
   return modelJson;
 }
 
-
-ConnectionPolicy
-NodeDelegateModel::
-portConnectionPolicy(PortType portType, PortIndex) const
-{
+ConnectionPolicy NodeDelegateModel::portConnectionPolicy(PortType portType,
+                                                         PortIndex) const {
   auto result = ConnectionPolicy::One;
-  switch(portType)
-  {
+  switch (portType) {
     case PortType::In:
       result = ConnectionPolicy::One;
       break;
@@ -43,21 +33,12 @@ portConnectionPolicy(PortType portType, PortIndex) const
   return result;
 }
 
-
-NodeStyle const &
-NodeDelegateModel::
-nodeStyle() const
-{
+NodeStyle const& NodeDelegateModel::nodeStyle() const {
   return _nodeStyle;
 }
 
-
-void
-NodeDelegateModel::
-setNodeStyle(NodeStyle const& style)
-{
+void NodeDelegateModel::setNodeStyle(NodeStyle const& style) {
   _nodeStyle = style;
 }
 
-
-}
+}  // namespace QtNodes
