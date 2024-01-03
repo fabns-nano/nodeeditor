@@ -1,25 +1,24 @@
-#include <nodes/DataFlowGraphModel>
-#include <nodes/FlowScene>
-#include <nodes/DataModelRegistry>
-#include <nodes/FlowView>
-#include <nodes/NodeData>
+#include <QtNodes/DataFlowGraphModel>
+#include <QtNodes/DataFlowGraphicsScene>
+#include <QtNodes/DataModelRegistry>
+#include <QtNodes/GraphicsView>
+#include <QtNodes/NodeData>
 
-#include <QtWidgets/QApplication>
 #include <QtGui/QScreen>
+#include <QtWidgets/QApplication>
 
-#include "ImageShowModel.hpp"
+
 #include "ImageLoaderModel.hpp"
+#include "ImageShowModel.hpp"
+
 
 using QtNodes::ConnectionStyle;
 using QtNodes::DataFlowGraphModel;
-using QtNodes::FlowScene;
 using QtNodes::DataModelRegistry;
+using QtNodes::FlowScene;
 using QtNodes::FlowView;
 
-
-static std::shared_ptr<DataModelRegistry>
-registerDataModels()
-{
+static std::shared_ptr<DataModelRegistry> registerDataModels() {
   auto ret = std::make_shared<DataModelRegistry>();
   ret->registerModel<ImageShowModel>();
 
@@ -28,10 +27,7 @@ registerDataModels()
   return ret;
 }
 
-
-int
-main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
 
   std::shared_ptr<DataModelRegistry> registry = registerDataModels();
@@ -45,9 +41,9 @@ main(int argc, char *argv[])
   view.setWindowTitle("Data Flow: Resizable Images");
   view.resize(800, 600);
   // Center window.
-  view.move(QApplication::primaryScreen()->availableGeometry().center() - view.rect().center());
+  view.move(QApplication::primaryScreen()->availableGeometry().center() -
+            view.rect().center());
   view.show();
 
   return app.exec();
 }
-

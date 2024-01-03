@@ -1,24 +1,23 @@
-#include <nodes/ConnectionStyle>
-#include <nodes/FlowView>
-#include <nodes/BasicGraphicsScene>
-#include <nodes/StyleCollection>
+#include <QtNodes/BasicGraphicsScene>
+#include <QtNodes/ConnectionStyle>
+#include <QtNodes/GraphicsView>
+#include <QtNodes/StyleCollection>
 
-#include <QtWidgets/QApplication>
+
 #include <QtGui/QAction>
 #include <QtGui/QScreen>
+#include <QtWidgets/QApplication>
+
 
 #include "CustomGraphModel.hpp"
 
-
+using QtNodes::BasicGraphicsScene;
 using QtNodes::ConnectionStyle;
 using QtNodes::FlowView;
-using QtNodes::BasicGraphicsScene;
 using QtNodes::NodeRole;
 using QtNodes::StyleCollection;
 
-int
-main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
 
   CustomGraphModel graphModel;
@@ -41,29 +40,22 @@ main(int argc, char *argv[])
   // Setup context menu for creating new nodes.
   view.setContextMenuPolicy(Qt::ActionsContextMenu);
   QAction createNodeAction(QStringLiteral("Create Node"), &view);
-  QObject::connect(&createNodeAction, &QAction::triggered,
-                   [&]()
-                   {
-                     // Mouse position in scene coordinates.
-                     QPointF posView =
-                       view.mapToScene(view.mapFromGlobal(QCursor::pos()));
+  QObject::connect(&createNodeAction, &QAction::triggered, [&]() {
+    // Mouse position in scene coordinates.
+    QPointF posView = view.mapToScene(view.mapFromGlobal(QCursor::pos()));
 
-
-                     NodeId const newId = graphModel.addNode();
-                     graphModel.setNodeData(newId,
-                                            NodeRole::Position,
-                                            posView);
-                   });
+    NodeId const newId = graphModel.addNode();
+    graphModel.setNodeData(newId, NodeRole::Position, posView);
+  });
   view.insertAction(view.actions().front(), &createNodeAction);
-
 
   view.setWindowTitle("Simple Node Graph");
   view.resize(800, 600);
 
   // Center window.
-  view.move(QApplication::primaryScreen()->availableGeometry().center() - view.rect().center());
+  view.move(QApplication::primaryScreen()->availableGeometry().center() -
+            view.rect().center());
   view.showNormal();
 
   return app.exec();
 }
-
