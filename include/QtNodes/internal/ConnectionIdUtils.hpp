@@ -13,9 +13,9 @@ inline PortIndex getNodeId(PortType portType, ConnectionId connectionId) {
   NodeId id = InvalidNodeId;
 
   if (portType == PortType::Out) {
-    id = std::get<0>(connectionId);
+    id = connectionId.outNodeId;
   } else if (portType == PortType::In) {
-    id = std::get<2>(connectionId);
+    id = connectionId.inNodeId;
   }
 
   return id;
@@ -25,9 +25,9 @@ inline PortIndex getPortIndex(PortType portType, ConnectionId connectionId) {
   PortIndex index = InvalidPortIndex;
 
   if (portType == PortType::Out) {
-    index = std::get<1>(connectionId);
+    index = connectionId.outPortIndex;
   } else if (portType == PortType::In) {
-    index = std::get<3>(connectionId);
+    index = connectionId.inPortIndex;
   }
 
   return index;
@@ -71,10 +71,10 @@ inline ConnectionId makeIncompleteConnectionId(
     NodeId const connectedNodeId,
     PortIndex const connectedPortIndex) {
   return (connectedPort == PortType::In)
-             ? std::make_tuple(InvalidNodeId, InvalidPortIndex, connectedNodeId,
-                               connectedPortIndex)
-             : std::make_tuple(connectedNodeId, connectedPortIndex,
-                               InvalidNodeId, InvalidPortIndex);
+             ? ConnectionId{InvalidNodeId, InvalidPortIndex, connectedNodeId,
+                            connectedPortIndex}
+             : ConnectionId{connectedNodeId, connectedPortIndex, InvalidNodeId,
+                            InvalidPortIndex};
 }
 
 /**
@@ -85,11 +85,11 @@ inline ConnectionId makeIncompleteConnectionId(
     ConnectionId connectionId,
     PortType const portToDisconnect) {
   if (portToDisconnect == PortType::Out) {
-    std::get<0>(connectionId) = InvalidNodeId;
-    std::get<1>(connectionId) = InvalidPortIndex;
+    connectionId.outNodeId = InvalidNodeId;
+    connectionId.outPortIndex = InvalidPortIndex;
   } else {
-    std::get<2>(connectionId) = InvalidNodeId;
-    std::get<3>(connectionId) = InvalidPortIndex;
+    connectionId.inNodeId = InvalidNodeId;
+    connectionId.inPortIndex = InvalidPortIndex;
   }
 
   return connectionId;
@@ -99,12 +99,12 @@ inline ConnectionId makeCompleteConnectionId(
     ConnectionId incompleteConnectionId,
     NodeId const nodeId,
     PortIndex const portIndex) {
-  if (std::get<0>(incompleteConnectionId) == InvalidNodeId) {
-    std::get<0>(incompleteConnectionId) = nodeId;
-    std::get<1>(incompleteConnectionId) = portIndex;
+  if (incompleteConnectionId.outNodeId == InvalidNodeId) {
+    incompleteConnectionId.outNodeId = nodeId;
+    incompleteConnectionId.outPortIndex = portIndex;
   } else {
-    std::get<2>(incompleteConnectionId) = nodeId;
-    std::get<3>(incompleteConnectionId) = portIndex;
+    incompleteConnectionId.inNodeId = nodeId;
+    incompleteConnectionId.inPortIndex = portIndex;
   }
 
   return incompleteConnectionId;
@@ -112,13 +112,13 @@ inline ConnectionId makeCompleteConnectionId(
 
 inline std::ostream& operator<<(std::ostream& ostr,
                                 ConnectionId const connectionId) {
-  ostr << "(" << std::get<0>(connectionId) << ", "
-       << (isPortIndexValid(std::get<1>(connectionId))
-               ? std::to_string(std::get<1>(connectionId))
+  ostr << "(" << connectionId.outNodeId << ", "
+       << (isPortIndexValid(connectionId.outPortIndex)
+               ? std::to_string(connectionId.outPortIndex)
                : "INVALID")
-       << ", " << std::get<2>(connectionId) << ", "
-       << (isPortIndexValid(std::get<3>(connectionId))
-               ? std::to_string(std::get<3>(connectionId))
+       << ", " << connectionId.inNodeId << ", "
+       << (isPortIndexValid(connectionId.inPortIndex)
+               ? std::to_string(connectionId.inPortIndex)
                : "INVALID")
        << ")" << std::endl;
 

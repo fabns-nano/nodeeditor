@@ -84,7 +84,7 @@ BasicGraphicsScene* ConnectionGraphicsObject::nodeScene() const {
   return dynamic_cast<BasicGraphicsScene*>(scene());
 }
 
-ConnectionId ConnectionGraphicsObject::connectionId() const {
+ConnectionId const& ConnectionGraphicsObject::connectionId() const {
   return _connectionId;
 }
 

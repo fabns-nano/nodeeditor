@@ -1,4 +1,5 @@
 #include "DataFlowGraphModel.hpp"
+#include "ConnectionIdHash.hpp"
 
 namespace QtNodes {
 
@@ -8,9 +9,8 @@ DataFlowGraphModel::DataFlowGraphModel(
 
 std::unordered_set<NodeId> DataFlowGraphModel::allNodeIds() const {
   std::unordered_set<NodeId> nodeIds;
-  for_each(_models.begin(), _models.end(), [&nodeIds](auto const& p) {
-    nodeIds.insert(p.first);
-  });
+  for_each(_models.begin(), _models.end(),
+           [&nodeIds](auto const& p) { nodeIds.insert(p.first); });
 
   return nodeIds;
 }
@@ -27,13 +27,11 @@ std::unordered_set<ConnectionId> DataFlowGraphModel::allConnectionIds(
     PortIndex const portIndex = std::get<2>(c.first);
 
     for (auto& target : c.second) {
-      if (portType == PortType::Out) {
-        result.insert(
-            std::make_tuple(nodeId, portIndex, target.first, target.second));
-      } else {
-        result.insert(
-            std::make_tuple(target.first, target.second, nodeId, portIndex));
+      ConnectionId conn = {nodeId, portIndex, target.first, target.second};
+      if (portType == PortType::In) {
+        invertConnection(conn);
       }
+      result.insert(conn);
     }
   }
 

@@ -140,10 +140,9 @@ void NodeGraphicsObject::moveConnections() const {
 
       for (auto& cn : connectedNodes) {
         // out node id, out port index, in node id, in port index.
-        ConnectionId connectionId =
-            (portType == PortType::In)
-                ? std::make_tuple(cn.first, cn.second, _nodeId, portIndex)
-                : std::make_tuple(_nodeId, portIndex, cn.first, cn.second);
+        ConnectionId connectionId{cn.first, cn.second, _nodeId, portIndex};
+        if (portType != PortType::In)
+          invertConnection(connectionId);
 
         auto cgo = nodeScene()->connectionGraphicsObject(connectionId);
 
@@ -200,8 +199,7 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
         auto const& cn = *connectedNodes.begin();
 
         // Need "reversed" connectin id if enabled for both port types.
-        ConnectionId connectionId =
-            std::make_tuple(cn.first, cn.second, _nodeId, portIndex);
+        ConnectionId connectionId{cn.first, cn.second, _nodeId, portIndex};
 
         // Need ConnectionGraphicsObject
 
@@ -220,8 +218,8 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 
           if (!connectedNodes.empty() && outPolicy == ConnectionPolicy::One) {
             for (auto& cn : connectedNodes) {
-              ConnectionId connectionId =
-                  std::make_tuple(_nodeId, portIndex, cn.first, cn.second);
+              ConnectionId connectionId{_nodeId, portIndex, cn.first,
+                                        cn.second};
 
               _graphModel.deleteConnection(connectionId);
             }

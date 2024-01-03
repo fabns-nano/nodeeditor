@@ -3,9 +3,8 @@
 #include <QtNodes/GraphicsView>
 #include <QtNodes/StyleCollection>
 
-
-#include <QtGui/QAction>
-#include <QtGui/QScreen>
+#include <QAction>
+#include <QScreen>
 #include <QtWidgets/QApplication>
 
 

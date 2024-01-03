@@ -151,13 +151,13 @@ static void drawNormalLine(QPainter* painter,
     auto const cId = cgo.connectionId();
 
     auto dataTypeOut = graphModel
-                           .portData(std::get<0>(cId), PortType::Out,
-                                     std::get<1>(cId), PortRole::DataType)
+                           .portData(cId.outNodeId, PortType::Out,
+                                     cId.outPortIndex, PortRole::DataType)
                            .value<NodeDataType>();
 
     auto dataTypeIn = graphModel
-                          .portData(std::get<2>(cId), PortType::In,
-                                    std::get<3>(cId), PortRole::DataType)
+                          .portData(cId.inNodeId, PortType::In, cId.inPortIndex,
+                                    PortRole::DataType)
                           .value<NodeDataType>();
 
     useGradientColor = (dataTypeOut.id != dataTypeIn.id);

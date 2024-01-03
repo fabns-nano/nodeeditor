@@ -39,7 +39,7 @@ class ConnectionGraphicsObject : public QGraphicsObject {
 
   BasicGraphicsScene* nodeScene() const;
 
-  ConnectionId connectionId() const;
+  ConnectionId const& connectionId() const;
 
   QRectF boundingRect() const override;
 
