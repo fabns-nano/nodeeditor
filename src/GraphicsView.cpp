@@ -50,6 +50,11 @@ GraphicsView::GraphicsView(QWidget* parent)
   setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
   // setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+
+  // Sets the scene rect to its maximum possible ranges to avoid autu scene
+  // range re-calculation when expanding the all QGraphicsItems common rect.
+  int maxSize = 32767;
+  setSceneRect(-maxSize, -maxSize, (maxSize * 2), (maxSize * 2));
 }
 
 GraphicsView::GraphicsView(BasicGraphicsScene* scene, QWidget* parent)
