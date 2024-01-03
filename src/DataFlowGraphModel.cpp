@@ -3,13 +3,14 @@
 namespace QtNodes {
 
 DataFlowGraphModel::DataFlowGraphModel(
-    std::shared_ptr<DataModelRegistry> registry)
+    std::shared_ptr<NodeDelegateModelRegistry> registry)
     : _registry(registry), _nextNodeId{0} {}
 
 std::unordered_set<NodeId> DataFlowGraphModel::allNodeIds() const {
   std::unordered_set<NodeId> nodeIds;
-  for_each(_models.begin(), _models.end(),
-           [&nodeIds](auto const& p) { nodeIds.insert(p.first); });
+  for_each(_models.begin(), _models.end(), [&nodeIds](auto const& p) {
+    nodeIds.insert(p.first);
+  });
 
   return nodeIds;
 }
@@ -65,12 +66,12 @@ bool DataFlowGraphModel::connectionExists(
 }
 
 NodeId DataFlowGraphModel::addNode(QString const nodeType) {
-  std::unique_ptr<NodeDataModel> model = _registry->create(nodeType);
+  std::unique_ptr<NodeDelegateModel> model = _registry->create(nodeType);
 
   if (model) {
     NodeId newId = newNodeId();
 
-    connect(model.get(), &NodeDataModel::dataUpdated,
+    connect(model.get(), &NodeDelegateModel::dataUpdated,
             [newId, this](PortIndex const portIndex) {
               onNodeDataUpdated(newId, portIndex);
             });
@@ -261,10 +262,8 @@ QVariant DataFlowGraphModel::portData(NodeId nodeId,
       break;
 
     case PortRole::ConnectionPolicyRole:
-      if (portType == PortType::Out)
-        result = QVariant::fromValue(model->portOutConnectionPolicy(portIndex));
-      else
-        result = QVariant::fromValue(ConnectionPolicy::One);
+      result =
+          QVariant::fromValue(model->portConnectionPolicy(portType, portIndex));
       break;
 
     case PortRole::CaptionVisible:
@@ -345,7 +344,8 @@ bool DataFlowGraphModel::deleteNode(NodeId const nodeId) {
 
 void DataFlowGraphModel::onNodeDataUpdated(NodeId const nodeId,
                                            PortIndex const portIndex) {
-  auto const& connected = connectedNodes(nodeId, PortType::Out, portIndex);
+  std::unordered_set<std::pair<NodeId, PortIndex>> const& connected =
+      connectedNodes(nodeId, PortType::Out, portIndex);
 
   // TODO: Should we pull the data through the model?
 #if 0

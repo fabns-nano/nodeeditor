@@ -2,11 +2,13 @@
 
 #include <memory>
 
-#include "AbstractGraphModel.hpp"
 #include "ConnectionIdUtils.hpp"
-#include "DataModelRegistry.hpp"
 #include "Export.hpp"
+#include "NodeDelegateModelRegistry.hpp"
 #include "StyleCollection.hpp"
+
+
+#include <memory>
 
 namespace QtNodes {
 
@@ -20,9 +22,11 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
   };
 
  public:
-  DataFlowGraphModel(std::shared_ptr<DataModelRegistry> registry);
+  DataFlowGraphModel(std::shared_ptr<NodeDelegateModelRegistry> registry);
 
-  std::shared_ptr<DataModelRegistry> dataModelRegistry() { return _registry; }
+  std::shared_ptr<NodeDelegateModelRegistry> dataModelRegistry() {
+    return _registry;
+  }
 
  public:
   std::unordered_set<NodeId> allNodeIds() const override;
@@ -71,7 +75,7 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
  private Q_SLOTS:
 
   /**
-   * Fuction is called by NodeDataModel when a node has new data to
+   * Fuction is called by NodeDelegateModel when a node has new data to
    * propagate.
    */
   void onNodeDataUpdated(NodeId const nodeId, PortIndex const portIndex);
@@ -80,11 +84,11 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
   void propagateEmptyDataTo(NodeId const nodeId, PortIndex const portIndex);
 
  private:
-  std::shared_ptr<DataModelRegistry> _registry;
+  std::shared_ptr<NodeDelegateModelRegistry> _registry;
 
   NodeId _nextNodeId;
 
-  std::unordered_map<NodeId, std::unique_ptr<NodeDataModel>> _models;
+  std::unordered_map<NodeId, std::unique_ptr<NodeDelegateModel>> _models;
 
   using ConnectivityKey = std::tuple<NodeId, PortType, PortIndex>;
 

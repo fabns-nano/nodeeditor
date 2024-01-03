@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Export.hpp"
+#include "NodeData.hpp"
+#include "NodeDelegateModel.hpp"
+#include "QStringStdHash.hpp"
+
+#include <QtCore/QString>
+
 #include <functional>
 #include <memory>
 #include <set>
@@ -8,25 +15,12 @@
 #include <utility>
 #include <vector>
 
-#include <QtCore/QString>
-
-#include "Export.hpp"
-#include "NodeData.hpp"
-#include "NodeDataModel.hpp"
-#include "QStringStdHash.hpp"
-
 namespace QtNodes {
 
 /// Class uses map for storing models (name, model)
-/**
- * @brief The DataModelRegistry class stores the node models that can be created
- * in a FlowScene. Each FlowScene instance has an associated model registry, and
- * a node model should be registered in the scene in order to be available for
- * creation.
- */
-class NODE_EDITOR_PUBLIC DataModelRegistry {
+class NODE_EDITOR_PUBLIC NodeDelegateModelRegistry {
  public:
-  using RegistryItemPtr = std::unique_ptr<NodeDataModel>;
+  using RegistryItemPtr = std::unique_ptr<NodeDelegateModel>;
   using RegistryItemCreator = std::function<RegistryItemPtr()>;
   using RegisteredModelCreatorsMap =
       std::unordered_map<QString, RegistryItemCreator>;
@@ -36,15 +30,16 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
   // using RegisteredTypeConvertersMap = std::map<TypeConverterId,
   // TypeConverter>;
 
-  DataModelRegistry() = default;
-  ~DataModelRegistry() = default;
+  NodeDelegateModelRegistry() = default;
+  ~NodeDelegateModelRegistry() = default;
 
-  DataModelRegistry(DataModelRegistry const&) = delete;
-  DataModelRegistry(DataModelRegistry&&) = default;
+  NodeDelegateModelRegistry(NodeDelegateModelRegistry const&) = delete;
+  NodeDelegateModelRegistry(NodeDelegateModelRegistry&&) = default;
 
-  DataModelRegistry& operator=(DataModelRegistry const&) = delete;
+  NodeDelegateModelRegistry& operator=(NodeDelegateModelRegistry const&) =
+      delete;
 
-  DataModelRegistry& operator=(DataModelRegistry&&) = default;
+  NodeDelegateModelRegistry& operator=(NodeDelegateModelRegistry&&) = default;
 
  public:
   template <typename ModelType>
@@ -71,10 +66,11 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
   template<typename ModelType>
   void
   registerModel(RegistryItemCreator creator,
-                QString const &category = "Nodes")
+                QString const&      category = "Nodes")
   {
     registerModel<ModelType>(std::move(creator), category);
   }
+
 
   template <typename ModelCreator>
   void
@@ -84,6 +80,7 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
     registerModel<ModelType>(std::forward<ModelCreator>(creator), category);
   }
 
+
   template <typename ModelCreator>
   void
   registerModel(QString const& category, ModelCreator&& creator)
@@ -91,16 +88,17 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
     registerModel(std::forward<ModelCreator>(creator), category);
   }
 
+
   void
-  registerTypeConverter(TypeConverterId const &id,
-                        TypeConverter typeConverter)
+  registerTypeConverter(TypeConverterId const& id,
+                        TypeConverter          typeConverter)
   {
     _registeredTypeConverters[id] = std::move(typeConverter);
   }
 
 #endif
 
-  std::unique_ptr<NodeDataModel> create(QString const& modelName);
+  std::unique_ptr<NodeDelegateModel> create(QString const& modelName);
 
   RegisteredModelCreatorsMap const& registeredModelCreators() const;
 
@@ -111,8 +109,8 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
 
 #if 0
   TypeConverter
-  getTypeConverter(NodeDataType const &d1,
-                   NodeDataType const &d2) const;
+  getTypeConverter(NodeDataType const& d1,
+                   NodeDataType const& d2) const;
 #endif
 
  private:
@@ -156,14 +154,14 @@ class NODE_EDITOR_PUBLIC DataModelRegistry {
     // Assert always fires, but the compiler doesn't know this:
     static_assert(!std::is_same<T, T>::value,
                   "The ModelCreator must return a std::unique_ptr<T>, where T "
-                  "inherits from NodeDataModel");
+                  "inherits from NodeDelegateModel");
   };
 
   template <typename T>
-  struct UnwrapUniquePtr<std::unique_ptr<T>> {
-    static_assert(std::is_base_of<NodeDataModel, T>::value,
+  struct UnwrapUniquePtr<std::unique_ptr<T> > {
+    static_assert(std::is_base_of<NodeDelegateModel, T>::value,
                   "The ModelCreator must return a std::unique_ptr<T>, where T "
-                  "inherits from NodeDataModel");
+                  "inherits from NodeDelegateModel");
     using type = T;
   };
 

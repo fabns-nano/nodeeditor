@@ -1,26 +1,27 @@
+#include "models.hpp"
+
 #include <QtNodes/ConnectionStyle>
 #include <QtNodes/DataFlowGraphModel>
 #include <QtNodes/DataFlowGraphicsScene>
-#include <QtNodes/DataModelRegistry>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/GraphicsViewStyle>
 #include <QtNodes/NodeData>
+#include <QtNodes/NodeDelegateModelRegistry>
 #include <QtNodes/NodeStyle>
+
 
 #include <QtWidgets/QApplication>
 
-#include "models.hpp"
-
 using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphicsScene;
 using QtNodes::DataFlowGraphModel;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
-using QtNodes::FlowViewStyle;
+using QtNodes::GraphicsView;
+using QtNodes::GraphicsViewStyle;
+using QtNodes::NodeDelegateModelRegistry;
 using QtNodes::NodeStyle;
 
-static std::shared_ptr<DataModelRegistry> registerDataModels() {
-  auto ret = std::make_shared<DataModelRegistry>();
+static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels() {
+  auto ret = std::make_shared<NodeDelegateModelRegistry>();
 
   ret->registerModel<MyDataModel>();
 
@@ -86,7 +87,7 @@ int main(int argc, char* argv[]) {
 
   setStyle();
 
-  std::shared_ptr<DataModelRegistry> registry = registerDataModels();
+  std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
   DataFlowGraphModel dataFlowGraphModel(registry);
 
   FlowScene scene(dataFlowGraphModel);

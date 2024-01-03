@@ -1,7 +1,11 @@
 #include "DataFlowGraphicsScene.hpp"
 
-#include <stdexcept>
-#include <utility>
+#include "ConnectionGraphicsObject.hpp"
+#include "GraphicsView.hpp"
+#include "NodeDelegateModelRegistry.hpp"
+#include "NodeGeometry.hpp"
+#include "NodeGraphicsObject.hpp"
+
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGraphicsSceneMoveEvent>
@@ -145,15 +149,15 @@ QMenu* DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos) {
 #if 0
 std::shared_ptr<Connection>
 DataFlowGraphicsScene::
-restoreConnection(QJsonObject const &connectionJson)
+restoreConnection(QJsonObject const& connectionJson)
 {
-  QUuid nodeInId  = QUuid(connectionJson["in_id"].toString());
+  QUuid nodeInId = QUuid(connectionJson["in_id"].toString());
   QUuid nodeOutId = QUuid(connectionJson["out_id"].toString());
 
-  PortIndex portIndexIn  = connectionJson["in_index"].toInt();
+  PortIndex portIndexIn = connectionJson["in_index"].toInt();
   PortIndex portIndexOut = connectionJson["out_index"].toInt();
 
-  auto nodeIn  = _nodes[nodeInId].get();
+  auto nodeIn = _nodes[nodeInId].get();
   auto nodeOut = _nodes[nodeOutId].get();
 
   auto getConverter = [&]()
@@ -194,7 +198,7 @@ restoreConnection(QJsonObject const &connectionJson)
 
 Node &
 DataFlowGraphicsScene::
-restoreNode(QJsonObject const &nodeJson)
+restoreNode(QJsonObject const& nodeJson)
 {
   QString modelName = nodeJson["model"].toObject()["name"].toString();
 
@@ -205,7 +209,7 @@ restoreNode(QJsonObject const &nodeJson)
                            modelName.toLocal8Bit().data());
 
   auto node = detail::make_unique<Node>(std::move(dataModel));
-  auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
+  auto ngo = detail::make_unique<NodeGraphicsObject>(*this, *node);
   node->setGraphicsObject(std::move(ngo));
 
   node->restore(nodeJson);
@@ -273,9 +277,9 @@ saveToMemory() const
 
   QJsonArray nodesJsonArray;
 
-  for (auto const &pair : _nodes)
+  for (auto const& pair : _nodes)
   {
-    auto const &node = pair.second;
+    auto const& node = pair.second;
 
     nodesJsonArray.append(node->save());
   }
@@ -283,9 +287,9 @@ saveToMemory() const
   sceneJson["nodes"] = nodesJsonArray;
 
   QJsonArray connectionJsonArray;
-  for (auto const &pair : _connections)
+  for (auto const& pair : _connections)
   {
-    auto const &connection = pair.second;
+    auto const& connection = pair.second;
 
     QJsonObject connectionJson = connection->save();
 
@@ -303,7 +307,7 @@ saveToMemory() const
 
 void
 DataFlowGraphicsScene::
-loadFromMemory(const QByteArray &data)
+loadFromMemory(const QByteArray& data)
 {
   QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
 

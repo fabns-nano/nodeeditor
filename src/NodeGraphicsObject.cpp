@@ -248,7 +248,7 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   // deselect all other items after this one is selected
   if (!isSelected()) {
-    nodeScene()->clearSelection();
+    scene()->clearSelection();
     setSelected(true);
   }
 

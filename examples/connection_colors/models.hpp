@@ -3,13 +3,13 @@
 #include <QtCore/QObject>
 
 #include <QtNodes/NodeData>
-#include <QtNodes/NodeDataModel>
+#include <QtNodes/NodeDelegateModel>
 
 #include <memory>
 
 using QtNodes::NodeData;
 using QtNodes::NodeDataType;
-using QtNodes::NodeDataModel;
+using QtNodes::NodeDelegateModel;
 using QtNodes::PortType;
 using QtNodes::PortIndex;
 
@@ -18,32 +18,33 @@ using QtNodes::PortIndex;
 class MyNodeData : public NodeData
 {
 public:
-
   NodeDataType
   type() const override
   {
     return NodeDataType {"MyNodeData",
                          "My Node Data"};
   }
+
 };
+
 
 class SimpleNodeData : public NodeData
 {
 public:
-
   NodeDataType
   type() const override
   {
     return NodeDataType {"SimpleData",
                          "Simple Data"};
   }
+
 };
 
 //------------------------------------------------------------------------------
 
 /// The model dictates the number of inputs and outputs for the Node.
 /// In this example it has no logic.
-class NaiveDataModel : public NodeDataModel
+class NaiveDataModel : public NodeDelegateModel
 {
   Q_OBJECT
 
@@ -59,6 +60,7 @@ public:
   {
     return QString("Naive Data Model");
   }
+
 
   QString
   progressValue() const override
@@ -102,8 +104,9 @@ public:
     return result;
   }
 
+
   NodeDataType
-  dataType(PortType const portType,
+  dataType(PortType const  portType,
            PortIndex const portIndex) const override
   {
     switch (portType)
@@ -135,6 +138,7 @@ public:
     return NodeDataType();
   }
 
+
   std::shared_ptr<NodeData>
   outData(PortIndex const port) override
   {
@@ -144,12 +148,14 @@ public:
     return std::make_shared<SimpleNodeData>();
   }
 
+
   void
   setInData(std::shared_ptr<NodeData>, PortIndex const) override
   {
     //
   }
 
-  QWidget *
+
+  QWidget*
   embeddedWidget() override { return nullptr; }
 };

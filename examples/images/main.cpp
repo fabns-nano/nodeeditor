@@ -1,25 +1,24 @@
 #include <QtNodes/DataFlowGraphModel>
 #include <QtNodes/DataFlowGraphicsScene>
-#include <QtNodes/DataModelRegistry>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeData>
+#include <QtNodes/NodeDelegateModelRegistry>
+
 
 #include <QtGui/QScreen>
 #include <QtWidgets/QApplication>
 
-
 #include "ImageLoaderModel.hpp"
 #include "ImageShowModel.hpp"
 
-
 using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphicsScene;
 using QtNodes::DataFlowGraphModel;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
+using QtNodes::GraphicsView;
+using QtNodes::NodeDelegateModelRegistry;
 
-static std::shared_ptr<DataModelRegistry> registerDataModels() {
-  auto ret = std::make_shared<DataModelRegistry>();
+static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels() {
+  auto ret = std::make_shared<NodeDelegateModelRegistry>();
   ret->registerModel<ImageShowModel>();
 
   ret->registerModel<ImageLoaderModel>();
@@ -30,7 +29,7 @@ static std::shared_ptr<DataModelRegistry> registerDataModels() {
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
 
-  std::shared_ptr<DataModelRegistry> registry = registerDataModels();
+  std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
 
   DataFlowGraphModel dataFlowGraphModel(registry);
 

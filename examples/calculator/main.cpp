@@ -1,15 +1,15 @@
 #include <QtNodes/ConnectionStyle>
 #include <QtNodes/DataFlowGraphModel>
 #include <QtNodes/DataFlowGraphicsScene>
-#include <QtNodes/DataModelRegistry>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeData>
+#include <QtNodes/NodeDelegateModelRegistry>
+
 
 #include <QtGui/QScreen>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QVBoxLayout>
-
 
 #include <QtGui/QScreen>
 
@@ -21,13 +21,13 @@
 #include "SubtractionModel.hpp"
 
 using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphicsScene;
 using QtNodes::DataFlowGraphModel;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
+using QtNodes::GraphicsView;
+using QtNodes::NodeDelegateModelRegistry;
 
-static std::shared_ptr<DataModelRegistry> registerDataModels() {
-  auto ret = std::make_shared<DataModelRegistry>();
+static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels() {
+  auto ret = std::make_shared<NodeDelegateModelRegistry>();
   ret->registerModel<NumberSourceDataModel>("Sources");
 
   ret->registerModel<NumberDisplayDataModel>("Displays");
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
   setStyle();
 
-  std::shared_ptr<DataModelRegistry> registry = registerDataModels();
+  std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
 
   QWidget mainWidget;
 
