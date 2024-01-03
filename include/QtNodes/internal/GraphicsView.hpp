@@ -96,6 +96,9 @@ public Q_SLOTS:
   void
   onDeleteSelectedObjects();
 
+  void
+  onDuplicateSelectedObjects();
+
 protected:
   void
   contextMenuEvent(QContextMenuEvent *event) override;
@@ -128,6 +131,7 @@ protected:
 private:
   QAction* _clearSelectionAction;
   QAction* _deleteSelectionAction;
+  QAction* _duplicateSelectionAction;
 
   /**
    * @brief _copySelectionAction Action that triggers copying the selected scene items to the clipboard.

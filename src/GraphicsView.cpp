@@ -88,26 +88,44 @@ QAction* GraphicsView::loadGroupAction() const {
 void GraphicsView::setScene(BasicGraphicsScene* scene) {
   QGraphicsView::setScene(scene);
 
-  // setup actions
-  delete _clearSelectionAction;
-  _clearSelectionAction = new QAction(QStringLiteral("Clear Selection"), this);
-  _clearSelectionAction->setShortcut(Qt::Key_Escape);
+  {
+    // setup actions
+    delete _clearSelectionAction;
+    _clearSelectionAction =
+        new QAction(QStringLiteral("Clear Selection"), this);
+    _clearSelectionAction->setShortcut(Qt::Key_Escape);
 
-  connect(_clearSelectionAction, &QAction::triggered, scene,
-          &QGraphicsScene::clearSelection);
+    connect(_clearSelectionAction, &QAction::triggered, scene,
+            &QGraphicsScene::clearSelection);
 
-  addAction(_clearSelectionAction);
+    addAction(_clearSelectionAction);
+  }
 
-  delete _deleteSelectionAction;
-  _deleteSelectionAction =
-      new QAction(QStringLiteral("Delete Selection"), this);
-  _deleteSelectionAction->setShortcutContext(
-      Qt::ShortcutContext::WidgetShortcut);
-  _deleteSelectionAction->setShortcut(QKeySequence(QKeySequence::Delete));
-  connect(_deleteSelectionAction, &QAction::triggered, this,
-          &GraphicsView::onDeleteSelectedObjects);
+  {
+    delete _deleteSelectionAction;
+    _deleteSelectionAction =
+        new QAction(QStringLiteral("Delete Selection"), this);
+    _deleteSelectionAction->setShortcutContext(
+        Qt::ShortcutContext::WidgetShortcut);
+    _deleteSelectionAction->setShortcut(QKeySequence(QKeySequence::Delete));
+    connect(_deleteSelectionAction, &QAction::triggered, this,
+            &GraphicsView::onDeleteSelectedObjects);
 
-  addAction(_deleteSelectionAction);
+    addAction(_deleteSelectionAction);
+  }
+
+  {
+    delete _duplicateSelectionAction;
+    _duplicateSelectionAction =
+        new QAction(QStringLiteral("Duplicate Selection"), this);
+    _duplicateSelectionAction->setShortcutContext(
+        Qt::ShortcutContext::WidgetShortcut);
+    _duplicateSelectionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    connect(_duplicateSelectionAction, &QAction::triggered, this,
+            &GraphicsView::onDuplicateSelectedObjects);
+
+    addAction(_duplicateSelectionAction);
+  }
 
   auto undoAction = scene->undoStack().createUndoAction(this, tr("&Undo"));
   undoAction->setShortcuts(QKeySequence::Undo);
@@ -185,6 +203,19 @@ void GraphicsView::scaleDown() {
 
 void GraphicsView::onDeleteSelectedObjects() {
   nodeScene()->undoStack().push(new DeleteCommand(nodeScene()));
+}
+
+void GraphicsView::onDuplicateSelectedObjects() {
+  QPoint origin = mapFromGlobal(QCursor::pos());
+
+  QRect const viewRect = rect();
+  if (!viewRect.contains(origin))
+    origin = viewRect.center();
+
+  QPointF relativeOrigin = mapToScene(origin);
+
+  nodeScene()->undoStack().push(
+      new DuplicateCommand(nodeScene(), relativeOrigin));
 }
 
 void GraphicsView::keyPressEvent(QKeyEvent* event) {
