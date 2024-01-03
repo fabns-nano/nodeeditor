@@ -47,6 +47,8 @@ class NODE_EDITOR_PUBLIC NodeDelegateModel : public QObject,
  public:
   QJsonObject save() const override;
 
+  void load(QJsonObject const&) override;
+
  public:
   virtual unsigned int nPorts(PortType portType) const = 0;
 

@@ -18,6 +18,10 @@ QJsonObject NodeDelegateModel::save() const {
   return modelJson;
 }
 
+void NodeDelegateModel::load(QJsonObject const&) {
+  //
+}
+
 ConnectionPolicy NodeDelegateModel::portConnectionPolicy(PortType portType,
                                                          PortIndex) const {
   auto result = ConnectionPolicy::One;

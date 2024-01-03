@@ -1,6 +1,8 @@
 #include "DataFlowGraphModel.hpp"
 #include "ConnectionIdHash.hpp"
 
+#include <QJsonArray>
+
 namespace QtNodes {
 
 DataFlowGraphModel::DataFlowGraphModel(
@@ -345,15 +347,7 @@ void DataFlowGraphModel::onNodeDataUpdated(NodeId const nodeId,
   std::unordered_set<std::pair<NodeId, PortIndex>> const& connected =
       connectedNodes(nodeId, PortType::Out, portIndex);
 
-  // TODO: Should we pull the data through the model?
-#if 0
-  auto outPortData =
-    portData(nodeId,
-             PortType::Out,
-             portIndex,
-             PortRole::Data).value<std::shared_ptr<NodeData>>();
-#endif
-
+  // We coudl also pull the data through the model::portData
   auto const outPortData = _models[nodeId]->outData(portIndex);
 
   for (auto const& cn : connected) {
