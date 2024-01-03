@@ -62,6 +62,9 @@ inline bool isPortTypeValid(PortType portType) {
   return portType != PortType::None;
 }
 
+/**
+ * Creates a connection Id instance filled just on one side.
+ */
 inline ConnectionId makeIncompleteConnectionId(
     PortType const connectedPort,
     NodeId const connectedNodeId,
@@ -73,6 +76,10 @@ inline ConnectionId makeIncompleteConnectionId(
                                InvalidNodeId, InvalidPortIndex);
 }
 
+/**
+ * Turns a full connection Id into an incomplete one by removing the
+ * data on the given side
+ */
 inline ConnectionId makeIncompleteConnectionId(
     ConnectionId connectionId,
     PortType const portToDisconnect) {

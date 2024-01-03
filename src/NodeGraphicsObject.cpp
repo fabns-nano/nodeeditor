@@ -210,7 +210,7 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
         if (portToCheck == PortType::Out) {
           auto const outPolicy = _graphModel
                                      .portData(_nodeId, portToCheck, portIndex,
-                                               PortRole::ConnectionPolicy)
+                                               PortRole::ConnectionPolicyRole)
                                      .value<ConnectionPolicy>();
 
           if (!connectedNodes.empty() && outPolicy == ConnectionPolicy::One) {
@@ -362,12 +362,12 @@ void NodeGraphicsObject::mouseDoubleClickEvent(
     QGraphicsSceneMouseEvent* event) {
   QGraphicsItem::mouseDoubleClickEvent(event);
 
-  nodeScene()->nodeDoubleClicked(_nodeId);
+  Q_EMIT nodeScene()->nodeDoubleClicked(_nodeId);
 }
 
 void NodeGraphicsObject::contextMenuEvent(
     QGraphicsSceneContextMenuEvent* event) {
-  nodeScene()->nodeContextMenu(_nodeId, mapToScene(event->pos()));
+  Q_EMIT nodeScene()->nodeContextMenu(_nodeId, mapToScene(event->pos()));
 }
 
 }  // namespace QtNodes

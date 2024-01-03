@@ -16,7 +16,7 @@ namespace QtNodes {
 
 void NodePainter::paint(QPainter* painter, NodeGraphicsObject const& ngo) {
   NodeGeometry geometry(ngo);
-  GraphModel const &model = ngo.graphModel();
+  GraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
 
   geometry.recalculateSizeIfFontChanged(painter->font());
@@ -45,23 +45,25 @@ void NodePainter::paint(QPainter* painter, NodeGraphicsObject const& ngo) {
 
   drawResizeRect(painter, ngo);
 
-  if (!model.nodeData(nodeId, NodeRole::CaptionVisible).toBool())
-  {
+  if (!model.nodeData(nodeId, NodeRole::CaptionVisible).toBool()) {
     drawModelNickname(painter, ngo);
     drawNodeCaption(painter, ngo);
 
     GraphModel const& model = ngo.graphModel();
     auto nodeId = ngo.nodeId();
 
-    auto processingStatusVariant = model.nodeData(nodeId, NodeRole::ProcessingStatus);
-    NodeProcessingStatus processingStatus = static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
+    auto processingStatusVariant =
+        model.nodeData(nodeId, NodeRole::ProcessingStatus);
+    NodeProcessingStatus processingStatus =
+        static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
 
-
-    if (processingStatus == NodeProcessingStatus::Processing)
-    {
-      if (!model.nodeData(nodeId, NodeRole::ProgressValue).toString().isNull())
-      {
-        drawProgressValue(painter, ngo, model.nodeData(nodeId, NodeRole::ProgressValue).toString());
+    if (processingStatus == NodeProcessingStatus::Processing) {
+      if (!model.nodeData(nodeId, NodeRole::ProgressValue)
+               .toString()
+               .isNull()) {
+        drawProgressValue(
+            painter, ngo,
+            model.nodeData(nodeId, NodeRole::ProgressValue).toString());
       }
     }
   }
@@ -165,7 +167,7 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
       bool canConnect =
           (connectedNodes.empty() ||
            model.portData(nodeId, portType, portIndex,
-                          PortRole::ConnectionPolicy)
+                          PortRole::ConnectionPolicyRole)
                    .value<ConnectionPolicy>() == ConnectionPolicy::Many);
 
       double r = 1.0;
@@ -277,11 +279,14 @@ void NodePainter::drawNodeCaption(QPainter* painter,
   font.setItalic(model.nodeData(nodeId, NodeRole::NicknameVisible).toBool());
 
   QFontMetrics metrics(font);
-  auto rect = metrics.boundingRect(name);   
+  auto rect = metrics.boundingRect(name);
 
-  int nicknameOffset = model.nodeData(nodeId, NodeRole::NicknameVisible).toBool() ? rect.height() : 0;
+  int nicknameOffset =
+      model.nodeData(nodeId, NodeRole::NicknameVisible).toBool() ? rect.height()
+                                                                 : 0;
 
-  double yPos = (geom.verticalSpacing() + geom.entryHeight() + nicknameOffset) / 3.0;
+  double yPos =
+      (geom.verticalSpacing() + geom.entryHeight() + nicknameOffset) / 3.0;
   if (model.nodeData(nodeId, NodeRole::NicknameVisible).toBool())
     yPos += 2.0 * geom.verticalSpacing() / 3.0;
 
@@ -302,7 +307,7 @@ void NodePainter::drawNodeCaption(QPainter* painter,
 
 // TODO: check if geo = size
 void NodePainter::drawModelNickname(QPainter* painter,
-                                    const NodeGraphicsObject &ngo) {
+                                    const NodeGraphicsObject& ngo) {
   GraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   QJsonDocument json =
@@ -314,7 +319,8 @@ void NodePainter::drawModelNickname(QPainter* painter,
   if (!model.nodeData(nodeId, NodeRole::NicknameVisible).toBool())
     return;
 
-  QString const& nickname = model.nodeData(nodeId, NodeRole::Nickname).toString();
+  QString const& nickname =
+      model.nodeData(nodeId, NodeRole::Nickname).toString();
 
   QFont font = painter->font();
 

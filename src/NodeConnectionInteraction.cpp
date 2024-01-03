@@ -18,54 +18,48 @@ NodeConnectionInteraction::NodeConnectionInteraction(
     BasicGraphicsScene& scene)
     : _ngo(ngo), _cgo(cgo), _scene(scene) {}
 
-bool
-    NodeConnectionInteraction::
-    canConnect(PortIndex * portIndex) const
-{
+bool NodeConnectionInteraction::canConnect(PortIndex* portIndex) const {
   // 1) Connection requires a port
 
   PortType requiredPort = _cgo.connectionState().requiredPort();
 
-  if (requiredPort == PortType::None)
-  {
+  if (requiredPort == PortType::None) {
     return false;
   }
 
   NodeId connectedNodeId =
       getNodeId(oppositePort(requiredPort), _cgo.connectionId());
 
-          // 1.5) Forbid connecting the node to itself
+  // 1.5) Forbid connecting the node to itself
 
   if (_ngo.nodeId() == connectedNodeId)
     return false;
 
-          // 2) connection point is on top of the node port
+  // 2) connection point is on top of the node port
 
   QPointF connectionPoint =
       _cgo.sceneTransform().map(_cgo.endPoint(requiredPort));
 
-  *portIndex = nodePortIndexUnderScenePoint(requiredPort,
-                                            connectionPoint);
+  *portIndex = nodePortIndexUnderScenePoint(requiredPort, connectionPoint);
 
-  if (*portIndex == InvalidPortIndex)
-  {
+  if (*portIndex == InvalidPortIndex) {
     return false;
   }
 
-          // 3) Node port is vacant
+  // 3) Node port is vacant
 
-          // port should be empty
+  // port should be empty
   if (!nodePortIsEmpty(requiredPort, *portIndex))
     return false;
 
-          // 4) Connection type equals node port type.
+  // 4) Connection type equals node port type.
 
-  GraphModel & model = _ngo.nodeScene()->graphModel();
+  GraphModel& model = _ngo.nodeScene()->graphModel();
 
   ConnectionId connectionId =
-      makeCompleteConnectionId(_cgo.connectionId(), // incomplete
-                               _ngo.nodeId(), // missing node id
-                               *portIndex); // missing port index
+      makeCompleteConnectionId(_cgo.connectionId(),  // incomplete
+                               _ngo.nodeId(),        // missing node id
+                               *portIndex);          // missing port index
 
   return model.connectionPossible(connectionId);
 }
@@ -128,8 +122,7 @@ bool NodeConnectionInteraction::disconnect(PortType portToDisconnect) const {
   auto const& draftConnection =
       _scene.makeDraftConnection(incompleteConnectionId);
 
-  QPointF looseEndPos = draftConnection->mapFromScene(scenePos);
-
+  QPointF const looseEndPos = draftConnection->mapFromScene(scenePos);
   draftConnection->setEndPoint(portToDisconnect, looseEndPos);
 
   // Repaint connection points.
@@ -187,7 +180,7 @@ bool NodeConnectionInteraction::nodePortIsEmpty(PortType portType,
   ConnectionPolicy const outPolicy =
       model
           .portData(_ngo.nodeId(), portType, portIndex,
-                    PortRole::ConnectionPolicy)
+                    PortRole::ConnectionPolicyRole)
           .value<ConnectionPolicy>();
 
   return (portType == PortType::Out && outPolicy == ConnectionPolicy::Many);

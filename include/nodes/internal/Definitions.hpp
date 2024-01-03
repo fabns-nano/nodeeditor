@@ -4,80 +4,96 @@
 
 #include <QtCore/QMetaObject>
 
-namespace QtNodes
-{
+/**
+ * @file
+ * Important definitions used throughout the library.
+ */
+
+namespace QtNodes {
 Q_NAMESPACE
 
-
-enum class NodeRole
-{
-  Type             = 0,
-  Position         = 1,
-  Size             = 2,
-  CaptionVisible   = 3,
-  Caption          = 4,
-  Style            = 5,
-  NumberOfInPorts  = 6,
-  NumberOfOutPorts = 7,
-  Widget           = 8,
-  NicknameVisible   = 9,
-  Nickname          = 10,
+/**
+ * Constants used for fetching QVariant data from GraphModel.
+ */
+enum class NodeRole {
+  Type = 0,              ///< Type of the current node, usually a string.
+  Position = 1,          ///< `QPointF` positon of the nod on the scene.
+  Size = 2,              ///< `QSize` for resizable nodes.
+  CaptionVisible = 3,    ///< `bool` for caption visibility.
+  Caption = 4,           ///< `QString` for node caption.
+  Style = 5,             ///< Custom NodeStyle.
+  NumberOfInPorts = 6,   ///< `unsigned int`
+  NumberOfOutPorts = 7,  ///< `unsigned int`
+  Widget = 8,            ///< Optional `QWidget*` or `nullptr`
+  NicknameVisible = 9,
+  Nickname = 10,
   ProgressValue = 11,
   ProcessingStatus = 12,
 };
 Q_ENUM_NS(NodeRole)
 
-
-enum NodeFlag
-{
-  NoFlags   = 0x0,
-  Resizable = 0x1,
+/**
+ * Specific flags regulating node features and appeaarence.
+ */
+enum NodeFlag {
+  NoFlags = 0x0,    ///< Default NodeFlag
+  Resizable = 0x1,  ///< Lets the node be resizable
 };
 
 Q_DECLARE_FLAGS(NodeFlags, NodeFlag)
 Q_FLAG_NS(NodeFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(NodeFlags)
 
-
-enum class PortRole
-{
-  Data             = 0,
-  DataType         = 1,
-  ConnectionPolicy = 2,
-  CaptionVisible   = 3,
-  Caption          = 4,
+/**
+ * Constants for fetching port-related information from the GraphModel.
+ */
+enum class PortRole {
+  Data = 0,                  ///< `std::shared_ptr<NodeData>`.
+  DataType = 1,              ///< `QString` describing the port data type.
+  ConnectionPolicyRole = 2,  ///< `enum` ConnectionPolicyRole
+  CaptionVisible = 3,        ///< `bool` for caption visibility.
+  Caption = 4,               ///< `QString` for port caption.
 };
 Q_ENUM_NS(PortRole)
 
-
-enum class ConnectionPolicy
-{
-  One,
-  Many,
+/**
+ * Defines how many connections are possible to attach to ports. The
+ * values are fetched using PortRole::ConnectionPolicy.
+ */
+enum class ConnectionPolicy {
+  One,   ///< Just one connection for each port.
+  Many,  ///< Any number of connections possible for the port.
 };
 Q_ENUM_NS(ConnectionPolicy)
 
-
-enum class PortType
-{
-  In   = 0,
-  Out  = 1,
+/**
+ * Used for distinguishing input and output node ports.
+ */
+enum class PortType {
+  In = 0,   ///< Input node port (from the left).
+  Out = 1,  ///< Output node port (from the right).
   None = 2
 };
 Q_ENUM_NS(PortType)
 
-
+/// ports are consecutively numbered starting from zero.
 using PortIndex = unsigned int;
 
 static constexpr PortIndex InvalidPortIndex =
-  std::numeric_limits<PortIndex>::max();
+    std::numeric_limits<PortIndex>::max();
 
+/// Unique Id associated with each node in the GraphModel.
 using NodeId = unsigned int;
 
-static constexpr NodeId InvalidNodeId =
-  std::numeric_limits<NodeId>::max();
+static constexpr NodeId InvalidNodeId = std::numeric_limits<NodeId>::max();
 
-using ConnectionId = std::tuple<NodeId, PortIndex,  // Port Out
-                                NodeId, PortIndex>; // Port In
+/**
+ * A unique connection identificator that stores a tuple made of
+ * (out `NodeId`, out `PortIndex`, in `NodeId`, in * `PortIndex`)
+ */
+using ConnectionId = std::tuple<NodeId,
+                                PortIndex,  // Port Out
+                                NodeId,
+                                PortIndex>;  // Port In
 
-}
+}  // namespace QtNodes
