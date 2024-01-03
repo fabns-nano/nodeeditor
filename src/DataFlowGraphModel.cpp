@@ -206,7 +206,7 @@ bool DataFlowGraphModel::setNodeData(NodeId nodeId,
     case NodeRole::Position: {
       _nodeGeometryData[nodeId].pos = value.value<QPointF>();
 
-      Q_EMIT nodePositonUpdated(nodeId);
+      Q_EMIT nodePositionUpdated(nodeId);
 
       result = true;
     } break;

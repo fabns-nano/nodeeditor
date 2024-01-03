@@ -271,6 +271,7 @@ void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
       _proxyWidget->setMaximumSize(oldSize);
       _proxyWidget->setPos(geometry.widgetPosition());
 
+      // Passes the new size to the model.
       geometry.recalculateSize();
 
       update();
@@ -282,10 +283,7 @@ void NodeGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   } else {
     QGraphicsObject::mouseMoveEvent(event);
 
-    if (event->lastPos() != event->pos())
-      moveConnections();
-
-    event->ignore();
+    _graphModel.setNodeData(_nodeId, NodeRole::Position, pos());
   }
 
   QRectF r = nodeScene()->sceneRect();
