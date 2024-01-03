@@ -4,6 +4,7 @@
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
 #include "DefaultHorizontalNodeGeometry.hpp"
+#include "DefaultNodePainter.hpp"
 #include "DefaultVerticalNodeGeometry.hpp"
 #include "GraphicsView.hpp"
 #include "NodeGeometry.hpp"
@@ -35,6 +36,7 @@ BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel& graphModel,
       _graphModel(graphModel),
       _nodeGeometry(
           std::make_unique<DefaultHorizontalNodeGeometry>(_graphModel)),
+      _nodePainter(std::make_unique<DefaultNodePainter>()),
       _undoStack(new QUndoStack(this)),
       _orientation(Qt::Horizontal) {
   setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -75,6 +77,15 @@ AbstractGraphModel& BasicGraphicsScene::graphModel() {
 
 AbstractNodeGeometry& BasicGraphicsScene::nodeGeometry() {
   return *_nodeGeometry;
+}
+
+AbstractNodePainter& BasicGraphicsScene::nodePainter() {
+  return *_nodePainter;
+}
+
+void BasicGraphicsScene::setNodePainter(
+    std::unique_ptr<AbstractNodePainter> newPainter) {
+  _nodePainter = std::move(newPainter);
 }
 
 QUndoStack& BasicGraphicsScene::undoStack() {

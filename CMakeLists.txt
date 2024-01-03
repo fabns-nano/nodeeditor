@@ -99,7 +99,7 @@ set(CPP_SOURCE_FILES
   src/NodeDelegateModel.cpp
   src/NodeGroup.cpp
   src/NodeGraphicsObject.cpp
-  src/NodePainter.cpp
+  src/DefaultNodePainter.cpp
   src/NodeState.cpp
   src/NodeStyle.cpp
   src/StyleCollection.cpp

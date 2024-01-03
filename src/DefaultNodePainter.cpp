@@ -1,4 +1,4 @@
-#include "NodePainter.hpp"
+#include "DefaultNodePainter.hpp"
 
 #include <cmath>
 
@@ -15,10 +15,11 @@
 
 namespace QtNodes {
 
-void NodePainter::paint(QPainter* painter, NodeGraphicsObject& ngo) {
+void DefaultNodePainter::paint(QPainter* painter,
+                               NodeGraphicsObject& ngo) const {
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
 
-  // TODO TODO TODO TODO
+  // TODO?
   // geometry.recomputeSizeIfFontChanged(painter->font());
 
   drawNodeRect(painter, ngo);
@@ -32,10 +33,10 @@ void NodePainter::paint(QPainter* painter, NodeGraphicsObject& ngo) {
   drawEntryLabels(painter, ngo);
 
   drawResizeRect(painter, ngo);
-  drawStatusIcon(painter, ngo);
 }
 
-void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawNodeRect(QPainter* painter,
+                                      NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
 
   NodeId const nodeId = ngo.nodeId();
@@ -52,18 +53,6 @@ void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
   auto color = ngo.isSelected() ? nodeStyle.SelectedBoundaryColor
                                 : nodeStyle.NormalBoundaryColor;
 
-  auto fill_color0 = ngo.isSelected() ? nodeStyle.SelectedGradientColor0
-                                      : nodeStyle.GradientColor0;
-
-  auto fill_color1 = ngo.isSelected() ? nodeStyle.SelectedGradientColor1
-                                      : nodeStyle.GradientColor1;
-
-  auto fill_color2 = ngo.isSelected() ? nodeStyle.SelectedGradientColor2
-                                      : nodeStyle.GradientColor2;
-
-  auto fill_color3 = ngo.isSelected() ? nodeStyle.SelectedGradientColor3
-                                      : nodeStyle.GradientColor3;
-
   if (ngo.nodeState().hovered()) {
     QPen p(color, nodeStyle.HoveredPenWidth);
     painter->setPen(p);
@@ -74,10 +63,10 @@ void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
 
   QLinearGradient gradient(QPointF(0.0, 0.0), QPointF(2.0, size.height()));
 
-  gradient.setColorAt(0.0, fill_color0);
-  gradient.setColorAt(0.03, fill_color1);
-  gradient.setColorAt(0.97, fill_color2);
-  gradient.setColorAt(1.0, fill_color3);
+  gradient.setColorAt(0.0, nodeStyle.GradientColor0);
+  gradient.setColorAt(0.03, nodeStyle.GradientColor1);
+  gradient.setColorAt(0.97, nodeStyle.GradientColor2);
+  gradient.setColorAt(1.0, nodeStyle.GradientColor3);
 
   painter->setBrush(gradient);
 
@@ -91,8 +80,8 @@ void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
   painter->drawRoundedRect(boundary, radius, radius);
 }
 
-void NodePainter::drawConnectionPoints(QPainter* painter,
-                                       NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawConnectionPoints(QPainter* painter,
+                                              NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
@@ -104,7 +93,7 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
   auto const& connectionStyle = StyleCollection::connectionStyle();
 
   float diameter = nodeStyle.ConnectionPointDiameter;
-  auto reducedDiameter = diameter * 0.8;
+  auto reducedDiameter = diameter * 0.6;
 
   for (PortType portType : {PortType::Out, PortType::In}) {
     size_t const n = model
@@ -164,8 +153,9 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
   }
 }
 
-void NodePainter::drawFilledConnectionPoints(QPainter* painter,
-                                             NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawFilledConnectionPoints(
+    QPainter* painter,
+    NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
@@ -203,13 +193,14 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
           painter->setBrush(nodeStyle.FilledConnectionPointColor);
         }
 
-        painter->drawEllipse(p, diameter * 0.8, diameter * 0.8);
+        painter->drawEllipse(p, diameter * 0.4, diameter * 0.4);
       }
     }
   }
 }
 
-void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawNodeCaption(QPainter* painter,
+                                         NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
@@ -219,9 +210,8 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
 
   QString const name = model.nodeData(nodeId, NodeRole::Caption).toString();
 
-  QFont font = painter->font();
-  font.setBold(!model.nodeData(nodeId, NodeRole::NicknameVisible).toBool());
-  font.setItalic(model.nodeData(nodeId, NodeRole::NicknameVisible).toBool());
+  QFont f = painter->font();
+  f.setBold(true);
 
   QPointF position = geometry.captionPosition(nodeId);
 
@@ -229,16 +219,16 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
   NodeStyle nodeStyle(json.object());
 
-  painter->setFont(font);
+  painter->setFont(f);
   painter->setPen(nodeStyle.FontColor);
   painter->drawText(position, name);
 
-  font.setBold(false);
-  font.setItalic(false);
-  painter->setFont(font);
+  f.setBold(false);
+  painter->setFont(f);
 }
 
-void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawEntryLabels(QPainter* painter,
+                                         NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
@@ -280,7 +270,8 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
   }
 }
 
-void NodePainter::drawResizeRect(QPainter* painter, NodeGraphicsObject& ngo) {
+void DefaultNodePainter::drawResizeRect(QPainter* painter,
+                                        NodeGraphicsObject& ngo) const {
   AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
@@ -290,41 +281,6 @@ void NodePainter::drawResizeRect(QPainter* painter, NodeGraphicsObject& ngo) {
 
     painter->drawEllipse(geometry.resizeHandleRect(nodeId));
   }
-}
-
-void NodePainter::drawStatusIcon(QPainter* painter,
-                                 NodeGraphicsObject const& ngo) {
-  NodeGeometry geom(ngo);
-  geom.updateStatusIconSize();
-  painter->drawPixmap(geom.statusIconRect(), geom.processingStatusIcon().pixmap(
-                                                 geom.statusIconSize() * 3));
-}
-
-void NodePainter::drawProgressValue(QPainter* painter,
-                                    NodeGraphicsObject const& ngo,
-                                    QString const& nodeProgress) {
-  GraphModel const& model = ngo.graphModel();
-  NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
-
-  QJsonDocument json =
-      QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
-  QFont font = painter->font();
-  font.setBold(true);
-
-  auto rect = QFontMetrics(font).boundingRect(nodeProgress);
-
-  // TODO: check if size.height() = to geo.height()
-  QSize size = model.nodeData(nodeId, NodeRole::Size).value<QSize>();
-  QPointF position(rect.width() / 2.0, size.height() - rect.height());
-
-  painter->setFont(font);
-  painter->setPen(nodeStyle.FontColor);
-  painter->drawText(position, nodeProgress);
-
-  font.setBold(false);
-  painter->setFont(font);
 }
 
 }  // namespace QtNodes

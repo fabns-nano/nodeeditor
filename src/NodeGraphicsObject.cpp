@@ -8,11 +8,11 @@
 
 #include "AbstractGraphModel.hpp"
 #include "AbstractNodeGeometry.hpp"
+#include "AbstractNodePainter.hpp"
 #include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
 #include "NodeConnectionInteraction.hpp"
-#include "NodePainter.hpp"
 #include "StyleCollection.hpp"
 #include "UndoCommands.hpp"
 
@@ -136,7 +136,7 @@ void NodeGraphicsObject::paint(QPainter* painter,
                                QWidget*) {
   painter->setClipRect(option->exposedRect);
 
-  NodePainter::paint(painter, *this);
+  nodeScene()->nodePainter().paint(painter, *this);
 }
 
 QVariant NodeGraphicsObject::itemChange(GraphicsItemChange change,
