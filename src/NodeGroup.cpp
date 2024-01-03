@@ -1,146 +1,95 @@
+// NodeGroup.cpp
+
 #include "NodeGroup.hpp"
-
-#include <QJsonDocument>
-#include <QJsonArray>
-
-#include <utility>
+//#include "Node.hpp"
+#include "GroupGraphicsObject.hpp" // Certifique-se de incluir o cabeçalho correto
+#include "qjsonarray.h"
 
 using QtNodes::GroupGraphicsObject;
-using QtNodes::Node;
 using QtNodes::NodeGroup;
 
 int NodeGroup::_groupCount = 0;
 
-NodeGroup::
-NodeGroup(std::vector<Node*> nodes,
-          const QUuid& uid,
-          QString name,
-          QObject* parent)
-  : QObject(parent)
-  , _name(std::move(name))
-  , _uid(uid)
-  , _childNodes(std::move(nodes))
-  , _groupGraphicsObject(nullptr)
-{
+NodeGroup::NodeGroup(QVector<NodeId> nodeIds,
+                     const QUuid& uid,
+                     QString name ,
+                     QObject* parent)
+    : QObject(parent),
+      _name(std::move(name)),
+      _uid(uid),
+      _nodeIds(std::move(nodeIds)),
+      _groupGraphicsObject(nullptr) {
   _groupCount++;
 }
 
-QByteArray
-NodeGroup::
-saveToFile() const
-{
+QByteArray NodeGroup::saveToFile() const {
   QJsonObject groupJson;
 
   groupJson["name"] = _name;
-  groupJson["id"] = _uid.toString();
+  groupJson["id"] = QUuid(_uid).toString();
+
 
   QJsonArray nodesJson;
-  for (auto const & node : _childNodes)
-  {
-    nodesJson.append(node->save());
+  for (const auto& nodeId : _nodeIds) {
+    QJsonObject nodeJson;
+    nodeJson["id"] = static_cast<int>(nodeId);
+    nodesJson.append(nodeJson);
   }
   groupJson["nodes"] = nodesJson;
-
-  QJsonArray connectionsJson;
-  auto groupConnections = _groupGraphicsObject->connections();
-  for (auto const & connection : groupConnections)
-  {
-    connectionsJson.append(connection->save());
-  }
-  groupJson["connections"] = connectionsJson;
 
   QJsonDocument groupDocument(groupJson);
 
   return groupDocument.toJson();
 }
 
-QUuid
-NodeGroup::
-id() const
-{
+QUuid NodeGroup::id() const {
   return _uid;
 }
 
-GroupGraphicsObject&
-NodeGroup::
-groupGraphicsObject()
-{
+GroupGraphicsObject& NodeGroup::groupGraphicsObject() {
   return *_groupGraphicsObject;
 }
 
-GroupGraphicsObject const&
-NodeGroup::
-groupGraphicsObject() const
-{
-  return *_groupGraphicsObject;
-}
 
-std::vector<Node*>&
-NodeGroup::
-childNodes()
-{
-  return _childNodes;
-}
-
-std::vector<QUuid>
-NodeGroup::
-nodeIDs() const
-{
-  std::vector<QUuid> ret{};
-  ret.reserve(_childNodes.size());
-
-  for (auto const & node : _childNodes)
-  {
-    ret.push_back(node->id());
-  }
-
-  return ret;
-}
-
-QString const&
-NodeGroup::name() const
-{
+const QString& NodeGroup::name() const {
   return _name;
 }
 
-void
-NodeGroup::
-setGraphicsObject(std::unique_ptr<GroupGraphicsObject>&& graphics_object)
-{
+void NodeGroup::setGraphicsObject(std::unique_ptr<GroupGraphicsObject>&& graphics_object) {
   _groupGraphicsObject = std::move(graphics_object);
-  _groupGraphicsObject->lock(true);
+  // TODO
+  //  _groupGraphicsObject->lock(true);
 }
 
-bool
-NodeGroup::
-empty() const
-{
-  return _childNodes.empty();
+bool NodeGroup::empty() const {
+  return _nodeIds.empty();
 }
 
-int
-NodeGroup::
-groupCount()
-{
+int NodeGroup::groupCount() {
   return _groupCount;
 }
 
-void
-NodeGroup::
-addNode(Node* node)
-{
-  _childNodes.push_back(node);
+void NodeGroup::addNode(NodeId nodeId) {
+ _nodeIds.push_back(nodeId);
 }
 
-void
-NodeGroup::
-removeNode(Node* node)
+void NodeGroup::removeNode(NodeId nodeId) {
+ auto it = std::find(_nodeIds.begin(), _nodeIds.end(), nodeId);
+ if (it != _nodeIds.end()) {
+    _nodeIds.erase(it);
+    if(_groupGraphicsObject != nullptr){
+      groupGraphicsObject().positionLockedIcon();
+    }
+ }
+}
+
+
+bool NodeGroup::containsNode(NodeId nodeId) const {
+  return _nodeIds.contains(nodeId);
+}
+
+
+QVector<QtNodes::NodeId> NodeGroup::nodeIds() const
 {
-  auto nodeIt = std::find(_childNodes.begin(), _childNodes.end(), node);
-  if (nodeIt != _childNodes.end())
-  {
-    (*nodeIt)->unsetNodeGroup();
-    _childNodes.erase(nodeIt);
-    groupGraphicsObject().positionLockedIcon();
-  }
+  return _nodeIds;
 }

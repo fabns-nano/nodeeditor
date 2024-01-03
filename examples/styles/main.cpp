@@ -1,21 +1,23 @@
-#include <QtWidgets/QApplication>
-
-#include <nodes/NodeData>
-#include <nodes/FlowScene>
-#include <nodes/FlowView>
-#include <nodes/DataModelRegistry>
-#include <nodes/NodeStyle>
-#include <nodes/FlowViewStyle>
 #include <nodes/ConnectionStyle>
+#include <nodes/DataFlowGraphModel>
+#include <nodes/FlowScene>
+#include <nodes/DataModelRegistry>
+#include <nodes/FlowView>
+#include <nodes/FlowViewStyle>
+#include <nodes/NodeData>
+#include <nodes/NodeStyle>
+
+#include <QtWidgets/QApplication>
 
 #include "models.hpp"
 
-using QtNodes::DataModelRegistry;
+using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphModel;
 using QtNodes::FlowScene;
+using QtNodes::DataModelRegistry;
 using QtNodes::FlowView;
 using QtNodes::FlowViewStyle;
 using QtNodes::NodeStyle;
-using QtNodes::ConnectionStyle;
 
 static std::shared_ptr<DataModelRegistry>
 registerDataModels()
@@ -33,7 +35,7 @@ void
 setStyle()
 {
   FlowViewStyle::setStyle(
-  R"(
+    R"(
   {
     "FlowViewStyle": {
       "BackgroundColor": [255, 255, 240],
@@ -44,7 +46,7 @@ setStyle()
   )");
 
   NodeStyle::setNodeStyle(
-  R"(
+    R"(
   {
     "NodeStyle": {
       "NormalBoundaryColor": "darkgray",
@@ -66,7 +68,7 @@ setStyle()
   )");
 
   ConnectionStyle::setConnectionStyle(
-  R"(
+    R"(
   {
     "ConnectionStyle": {
       "ConstructionColor": "gray",
@@ -86,8 +88,6 @@ setStyle()
 }
 
 
-//------------------------------------------------------------------------------
-
 int
 main(int argc, char* argv[])
 {
@@ -95,7 +95,10 @@ main(int argc, char* argv[])
 
   setStyle();
 
-  FlowScene scene(registerDataModels());
+  std::shared_ptr<DataModelRegistry> registry = registerDataModels();
+  DataFlowGraphModel dataFlowGraphModel(registry);
+
+  FlowScene scene(dataFlowGraphModel);
 
   FlowView view(&scene);
 
@@ -105,3 +108,4 @@ main(int argc, char* argv[])
 
   return app.exec();
 }
+

@@ -82,7 +82,7 @@ public:
 public:
 
   unsigned int
-  nPorts(PortType portType) const override
+  nPorts(PortType const portType) const override
   {
     unsigned int result = 1;
 
@@ -103,8 +103,8 @@ public:
   }
 
   NodeDataType
-  dataType(PortType portType,
-           PortIndex portIndex) const override
+  dataType(PortType const portType,
+           PortIndex const portIndex) const override
   {
     switch (portType)
     {
@@ -136,7 +136,7 @@ public:
   }
 
   std::shared_ptr<NodeData>
-  outData(PortIndex port) override
+  outData(PortIndex const port) override
   {
     if (port < 1)
       return std::make_shared<MyNodeData>();
@@ -145,7 +145,7 @@ public:
   }
 
   void
-  setInData(std::shared_ptr<NodeData>, int) override
+  setInData(std::shared_ptr<NodeData>, PortIndex const) override
   {
     //
   }

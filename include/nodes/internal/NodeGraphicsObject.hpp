@@ -3,18 +3,14 @@
 #include <QtCore/QUuid>
 #include <QtWidgets/QGraphicsObject>
 
-#include "Connection.hpp"
-
-#include "NodeGeometry.hpp"
 #include "NodeState.hpp"
 
 class QGraphicsProxyWidget;
 
-namespace QtNodes
-{
+namespace QtNodes {
 
-class FlowScene;
-class FlowItemEntry;
+class BasicGraphicsScene;
+class GraphModel;
 class GroupGraphicsObject;
 
 /**
@@ -22,97 +18,81 @@ class GroupGraphicsObject;
  * Each node is associated with a unique NodeGraphicsObject. This class reacts
  * on GUI events, mouse clicks and forwards painting operation.
  */
-class NodeGraphicsObject : public QGraphicsObject
-{
+class NodeGraphicsObject : public QGraphicsObject {
   Q_OBJECT
+ public:
+  // Needed for qgraphicsitem_cast
+  enum { Type = UserType + 1 };
 
-public:
-  NodeGraphicsObject(FlowScene &scene,
-                     Node& node);
+  int type() const override { return Type; }
 
-  virtual
-  ~NodeGraphicsObject();
+ public:
+  NodeGraphicsObject(BasicGraphicsScene& scene, NodeId node);
 
-  Node&
-  node();
+  ~NodeGraphicsObject() override = default;
 
-  Node const&
-  node() const;
+ public:
+  GraphModel& graphModel() const;
 
-  QRectF
-  boundingRect() const override;
+  BasicGraphicsScene* nodeScene() const;
 
-  void
-  setGeometryChanged();
+  NodeId nodeId() { return _nodeId; }
+  NodeId nodeId() const { return _nodeId; }
+
+  NodeState& nodeState() { return _nodeState; }
+  NodeState const& nodeState() const { return _nodeState; }
+
+  QRectF boundingRect() const override;
+
+  void setGeometryChanged();
 
   /// Visits all attached connections and corrects
   /// their corresponding end points.
-  void
-  moveConnections() const;
-
-  enum { Type = UserType + 1 };
-
-  int
-  type() const override
-  {
-    return Type;
-  }
-
-  void
-  lock(bool locked);
+  void moveConnections() const;
 
   /**
    * @brief Method that updates the graphical object accounting for changes in
    * the node's geometry and ports.
    */
-  void
-  updateGeometry();
+  void updateGeometry();
 
-protected:
-  void
-  paint(QPainter*                       painter,
-        QStyleOptionGraphicsItem const* option,
-        QWidget*                        widget = 0) override;
+ protected:
+  void paint(QPainter* painter,
+             QStyleOptionGraphicsItem const* option,
+             QWidget* widget = 0) override;
 
-  QVariant
-  itemChange(GraphicsItemChange change, const QVariant &value) override;
+  QVariant itemChange(GraphicsItemChange change,
+                      const QVariant& value) override;
 
-  void
-  mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void
-  hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void
-  hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
+  void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
 
-  void
-  mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
+  void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+  void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
 
-private:
+ private:
+  void embedQWidget();
 
-  void
-  embedQWidget();
+  // private Q_SLOTS:
 
-private:
+  // void onNodeSizeUpdated();
 
-  FlowScene & _scene;
+ private:
+  NodeId _nodeId;
 
-  Node& _node;
+  GraphModel& _graphModel;
 
-  bool _locked;
+  NodeState _nodeState;
 
   bool _draggingIntoGroup;
 
@@ -121,6 +101,6 @@ private:
   QRectF _originalGroupSize;
 
   // either nullptr or owned by parent QGraphicsItem
-  QGraphicsProxyWidget * _proxyWidget;
+  QGraphicsProxyWidget* _proxyWidget;
 };
-}
+}  // namespace QtNodes

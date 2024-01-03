@@ -1,96 +1,97 @@
 #pragma once
 
-#include <QtCore/QUuid>
+#include <utility>
 
+#include <QtCore/QUuid>
 #include <QtWidgets/QGraphicsObject>
+
+#include "ConnectionState.hpp"
+#include "Definitions.hpp"
 
 class QGraphicsSceneMouseEvent;
 
-namespace QtNodes
-{
+namespace QtNodes {
 
-class FlowScene;
-class Connection;
-class ConnectionGeometry;
-class Node;
+class BasicGraphicsScene;
+class GraphModel;
 
 /**
  * @brief The ConnectionGraphicsObject class stores the graphical object
  * of a connection. Each connection is associated with a unique graphics
  * object. Upon creation, the object adds itself to the scene.
  */
-class ConnectionGraphicsObject
-  : public QGraphicsObject
-{
+class ConnectionGraphicsObject : public QGraphicsObject {
   Q_OBJECT
-
-public:
-
-  ConnectionGraphicsObject(FlowScene &scene,
-                           Connection &connection);
-
-  virtual
-  ~ConnectionGraphicsObject();
-
+ public:
+  // Needed for qgraphicsitem_cast
   enum { Type = UserType + 2 };
-  int
-  type() const override
-  {
-    return Type;
-  }
 
-public:
+  int type() const override { return Type; }
 
-  Connection&
-  connection();
+ public:
+  ConnectionGraphicsObject(BasicGraphicsScene& scene,
+                           ConnectionId const connectionId);
 
-  QRectF
-  boundingRect() const override;
+  ~ConnectionGraphicsObject() = default;
 
-  QPainterPath
-  shape() const override;
+ public:
+  void initializePosition();
 
-  void
-  setGeometryChanged();
+  GraphModel& graphModel() const;
+
+  BasicGraphicsScene* nodeScene() const;
+
+  ConnectionId connectionId() const;
+
+  QRectF boundingRect() const override;
+
+  QPainterPath shape() const override;
+
+  QPointF const& endPoint(PortType portType) const;
+
+  QPointF out() const { return _out; }
+
+  QPointF in() const { return _in; }
+
+  std::pair<QPointF, QPointF> pointsC1C2() const;
+
+  void setEndPoint(PortType portType, QPointF const& point);
+
+  void setGeometryChanged();
 
   /// Updates the position of both ends
-  void
-  move();
+  void move();
 
-  void
-  lock(bool locked);
+  ConnectionState const& connectionState() const;
+  ConnectionState& connectionState();
 
-protected:
+ protected:
+  void paint(QPainter* painter,
+             QStyleOptionGraphicsItem const* option,
+             QWidget* widget = 0) override;
 
-  void
-  paint(QPainter* painter,
-        QStyleOptionGraphicsItem const* option,
-        QWidget* widget = 0) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
-  void
-  mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void
-  hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
-  void
-  hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+ private:
+  void addGraphicsEffect();
 
-private:
+ private:
+  ConnectionId _connectionId;
 
-  void
-  addGraphicsEffect();
+  GraphModel& _graphModel;
 
-private:
+  ConnectionState _connectionState;
 
-  FlowScene & _scene;
-
-  Connection& _connection;
+  QPointF _out;
+  QPointF _in;
 };
-}
+
+}  // namespace QtNodes

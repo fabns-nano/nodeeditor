@@ -1,111 +1,102 @@
 #include "NodeState.hpp"
 
-#include "NodeDataModel.hpp"
+#include "NodeGraphicsObject.hpp"
 
-#include "Connection.hpp"
+namespace QtNodes {
 
-using QtNodes::NodeState;
-using QtNodes::NodeDataType;
-using QtNodes::NodeDataModel;
-using QtNodes::PortType;
-using QtNodes::PortIndex;
-using QtNodes::Connection;
+NodeState::NodeState(NodeGraphicsObject& ngo)
+    : _ngo(ngo),
+      _hovered(false),
+      _reaction(NOT_REACTING),
+      _reactingPortType(PortType::None)
+      //, _locked(false)
+      ,
+      _resizing(false) {}
 
-NodeState::
-NodeState(std::unique_ptr<NodeDataModel> const &model)
-  : _inConnections(model->nPorts(PortType::In))
-  , _outConnections(model->nPorts(PortType::Out))
-  , _reaction(NOT_REACTING)
-  , _reactingPortType(PortType::None)
-  , _resizing(false)
-{}
+// std::vector<NodeState::ConnectionPtrSet> const &
+// NodeState::
+// getEntries(PortType portType) const
+//{
+// if (portType == PortType::In)
+// return _inConnections;
+// else
+// return _outConnections;
+// }
 
+// std::vector<NodeState::ConnectionPtrSet> &
+// NodeState::
+// getEntries(PortType portType)
+//{
+// if (portType == PortType::In)
+// return _inConnections;
+// else
+// return _outConnections;
+// }
 
-std::vector<NodeState::ConnectionPtrSet> const &
-NodeState::
-getEntries(PortType portType) const
-{
-  if (portType == PortType::In)
-    return _inConnections;
-  else
-    return _outConnections;
+// NodeState::ConnectionPtrSet
+// NodeState::
+// connections(PortType portType, PortIndex portIndex) const
+//{
+// auto const &connections = getEntries(portType);
+
+// return connections[portIndex];
+// }
+
+// void
+// NodeState::
+// setConnection(PortType portType,
+// PortIndex portIndex,
+// Connection& connection)
+//{
+// auto &connections = getEntries(portType);
+
+// connections.at(portIndex).insert(std::make_pair(connection.id(),
+//&connection));
+// }
+
+// void
+// NodeState::
+// eraseConnection(PortType portType,
+// PortIndex portIndex,
+// QUuid id)
+//{
+// getEntries(portType)[portIndex].erase(id);
+// }
+
+void NodeState::setResizing(bool resizing) {
+  _resizing = resizing;
 }
 
-
-std::vector<NodeState::ConnectionPtrSet> &
-NodeState::
-getEntries(PortType portType)
-{
-  if (portType == PortType::In)
-    return _inConnections;
-  else
-    return _outConnections;
+bool NodeState::resizing() const {
+  return _resizing;
 }
 
+// void
+// NodeState::
+// lock(bool locked)
+//{
+//_locked = locked;
 
-NodeState::ConnectionPtrSet
-NodeState::
-connections(PortType portType, PortIndex portIndex) const
-{
-  auto const &connections = getEntries(portType);
+// setFlag(QGraphicsItem::ItemIsMovable,    !locked);
+// setFlag(QGraphicsItem::ItemIsFocusable,  !locked);
+// setFlag(QGraphicsItem::ItemIsSelectable, !locked);
+// }
 
-  return connections[portIndex];
-}
-
-
-void
-NodeState::
-setConnection(PortType portType,
-              PortIndex portIndex,
-              Connection& connection)
-{
-  auto &connections = getEntries(portType);
-
-  connections.at(portIndex).insert(std::make_pair(connection.id(),
-                                               &connection));
-}
-
-
-void
-NodeState::
-eraseConnection(PortType portType,
-                PortIndex portIndex,
-                QUuid id)
-{
-  getEntries(portType)[portIndex].erase(id);
-}
-
-
-NodeState::ReactToConnectionState
-NodeState::
-reaction() const
-{
+NodeState::ReactToConnectionState NodeState::reaction() const {
   return _reaction;
 }
 
-
-PortType
-NodeState::
-reactingPortType() const
-{
+PortType NodeState::reactingPortType() const {
   return _reactingPortType;
 }
 
-
-NodeDataType
-NodeState::
-reactingDataType() const
-{
+NodeDataType NodeState::reactingDataType() const {
   return _reactingDataType;
 }
 
-
-void
-NodeState::
-setReaction(ReactToConnectionState reaction,
-            PortType reactingPortType,
-            NodeDataType reactingDataType)
-{
+void NodeState::setReaction(ReactToConnectionState reaction,
+                            PortType reactingPortType,
+                            NodeDataType reactingDataType) {
   _reaction = reaction;
 
   _reactingPortType = reactingPortType;
@@ -113,72 +104,74 @@ setReaction(ReactToConnectionState reaction,
   _reactingDataType = std::move(reactingDataType);
 }
 
-
-bool
-NodeState::
-isReacting() const
-{
+bool NodeState::isReacting() const {
   return _reaction == REACTING;
 }
 
+void NodeState::reactToPossibleConnection(PortType reactingPortType,
+                                          NodeDataType const& reactingDataType,
+                                          QPointF const& scenePoint) {
+  QTransform const t = _ngo.sceneTransform();
 
-void
-NodeState::
-setResizing(bool resizing)
-{
-  _resizing = resizing;
+  QPointF p = t.inverted().map(scenePoint);
+
+  _draggingPos = p;
+
+  setReaction(NodeState::REACTING, reactingPortType, reactingDataType);
+
+  _ngo.update();
 }
 
+void NodeState::resetReactionToConnection() {
+  setReaction(NodeState::NOT_REACTING);
 
-bool
-NodeState::
-resizing() const
-{
-  return _resizing;
+  _ngo.update();
 }
 
-void
-NodeState::
-insertPort(const PortType& portType,
-           const size_t index)
-{
-  auto& ports = getEntries(portType);
-  ports.emplace(std::next(ports.begin(), index));
-  updateConnectionIndices(portType, index + 1);
-}
+}  // namespace QtNodes
 
-void
-NodeState::
-erasePort(const PortType portType,
-          const size_t index)
-{
-  auto& ports = getEntries(portType);
-  auto erased_port_map_it = std::next(ports.begin(), index);
+// void
+// NodeState::
+// insertPort(const PortType& portType,
+//            const size_t index)
+// {
+//   auto& ports = getEntries(portType);
+//   ports.emplace(std::next(ports.begin(), index));
+//   updateConnectionIndices(portType, index + 1);
+// }
 
-  // erases port connections
-  for (auto& entry : *erased_port_map_it)
-  {
-    eraseConnection(portType, index, entry.first);
-  }
+// void
+// NodeState::
+// erasePort(const PortType portType,
+//           const size_t index)
+// {
+//   auto& ports = getEntries(portType);
+//   auto erased_port_map_it = std::next(ports.begin(), index);
 
-  // erases port
-  ports.erase(erased_port_map_it);
+//   // erases port connections
+//   for (auto& entry : *erased_port_map_it)
+//   {
+//     eraseConnection(portType, index, entry.first);
+//   }
 
-  // reassigns subsequent ports
-  updateConnectionIndices(portType, index);
-}
+//   // erases port
+//   ports.erase(erased_port_map_it);
 
-void
-NodeState::
-updateConnectionIndices(const PortType portType,
-                        const size_t index)
-{
-  auto& ports = getEntries(portType);
-  for (size_t i = index; i < ports.size(); i++)
-  {
-    for (const auto& entry : ports[i])
-    {
-      entry.second->setPortIndex(portType, i);
-    }
-  }
-}
+//   // reassigns subsequent ports
+//   updateConnectionIndices(portType, index);
+// }
+
+// void
+// NodeState::
+// updateConnectionIndices(const PortType portType,
+//                         const size_t index)
+// {
+//   auto& ports = getEntries(portType);
+//   for (size_t i = index; i < ports.size(); i++)
+//   {
+//     for (const auto& entry : ports[i])
+//     {
+//       entry.second->setPortIndex(portType, i);
+//     }
+//   }
+// }

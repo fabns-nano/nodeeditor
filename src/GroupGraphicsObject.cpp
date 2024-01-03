@@ -2,16 +2,13 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
-#include <nodes/Node>
 
-#include "FlowScene.hpp"
-#include "Connection.hpp"
+#include "NodeGraphicsObject.hpp"
+#include "qpainter.h"
 
 using QtNodes::GroupGraphicsObject;
 using QtNodes::NodeGraphicsObject;
 using QtNodes::NodeGroup;
-using QtNodes::Connection;
-using QtNodes::FlowScene;
 
 
 IconGraphicsItem::
@@ -38,11 +35,10 @@ scaleFactor() const
 
 
 GroupGraphicsObject::
-GroupGraphicsObject(FlowScene& scene,
-                    NodeGroup& nodeGroup)
+GroupGraphicsObject(DataFlowGraphicsScene& scene, NodeGroup& nodeGroup)
   : _scene(scene)
   , _group(nodeGroup)
-  , _possibleChild(nullptr)
+  , _possibleChild(InvalidNodeId)
   , _locked(false)
 {
   setRect(0, 0, _defaultWidth, _defaultHeight);
@@ -90,21 +86,27 @@ group() const
 }
 
 
-QRectF
-GroupGraphicsObject::
-boundingRect() const
+QRectF GroupGraphicsObject::boundingRect() const
 {
   QRectF ret{};
-  for (auto& node : _group.childNodes())
-  {
-    NodeGraphicsObject* ngo = &node->nodeGraphicsObject();
 
-    ret |= ngo->mapRectToScene(ngo->boundingRect());
-  }
-  if (_possibleChild)
-  {
-    ret |= _possibleChild->mapRectToScene(_possibleChild->boundingRect());
-  }
+    for (auto nodeId : _group.nodeIds()){
+
+    auto nodeGraphicsObject = _scene.nodeGraphicsObject(nodeId);
+
+      if (nodeGraphicsObject){
+        ret |= nodeGraphicsObject->mapRectToScene(nodeGraphicsObject->boundingRect());
+      }
+    }
+
+    if (_possibleChild){
+      auto possibleChildGraphicsObject = _scene.nodeGraphicsObject(_possibleChild);
+      if (possibleChildGraphicsObject)
+      {
+        ret |= possibleChildGraphicsObject->mapRectToScene(possibleChildGraphicsObject->boundingRect());
+      }
+    }
+
   return mapRectFromScene(ret.marginsAdded(_margins));
 }
 
@@ -125,42 +127,62 @@ setBorderColor(const QColor& color)
 }
 
 
-void
-GroupGraphicsObject::
-moveConnections()
+void GroupGraphicsObject::moveConnections()
 {
-  for (auto& node : group().childNodes())
+  for (auto const & nodeId : group().nodeIds())
   {
-    node->nodeGraphicsObject().moveConnections();
+      auto nodeGraphicsObject = _scene.nodeGraphicsObject(nodeId);
+
+      if (nodeGraphicsObject)
+      {
+        nodeGraphicsObject->moveConnections();
+      }
+  }
+}
+
+void GroupGraphicsObject::moveNodes(const QPointF& offset)
+{
+  for (auto nodeId : group().nodeIds())
+  {
+      auto nodeGraphicsObject = _scene.nodeGraphicsObject(nodeId);
+
+      if (nodeGraphicsObject)
+      {
+        nodeGraphicsObject->moveBy(offset.x(), offset.y());
+        nodeGraphicsObject->moveConnections();
+      }
   }
 }
 
 
-void
-GroupGraphicsObject::
-moveNodes(const QPointF& offset)
-{
-  for (auto& node : group().childNodes())
-  {
-    node->nodeGraphicsObject().moveBy(offset.x(), offset.y());
-  }
-}
+
+//void GroupGraphicsObject::lock(bool locked)
+//{
+//  for (auto& connectionInfo : connections())
+//  {
+//    auto sourceNodeId = std::get<0>(connectionInfo);
+//    auto sourcePortIndex = std::get<1>(connectionInfo);
+//    auto destNodeId = std::get<2>(connectionInfo);
+//    auto destPortIndex = std::get<3>(connectionInfo);
+
+//    auto sourceNodeGraphicsObject = _scene.nodeGraphicsObject(sourceNodeId);
+//    auto destNodeGraphicsObject = _scene.nodeGraphicsObject(destNodeId);
+
+//    if (sourceNodeGraphicsObject && destNodeGraphicsObject)
+//    {
+//        sourceNodeGraphicsObject->setLocked(locked);
+//        destNodeGraphicsObject->setLocked(locked);
+//    }
+//  }
+
+//  _lockedGraphicsItem->setVisible(locked);
+//  _unlockedGraphicsItem->setVisible(!locked);
+//  setFillColor(locked ? kLockedFillColor : kUnlockedFillColor);
+//  _locked = locked;
+//  setZValue(locked ? _groupAreaZValue : -_groupAreaZValue);
+//}
 
 
-void
-GroupGraphicsObject::
-lock(bool locked)
-{
-  for (auto& node : _group.childNodes())
-  {
-    node->nodeGraphicsObject().lock(locked);
-  }
-  _lockedGraphicsItem->setVisible(locked);
-  _unlockedGraphicsItem->setVisible(!locked);
-  setFillColor(locked? kLockedFillColor : kUnlockedFillColor);
-  _locked = locked;
-  setZValue(locked? _groupAreaZValue : -_groupAreaZValue);
-}
 
 
 bool
@@ -185,27 +207,29 @@ positionLockedIcon()
                                           _roundedBorderRadius));
 }
 
-
-void
-GroupGraphicsObject::
-setHovered(bool hovered)
+void GroupGraphicsObject::setHovered(bool hovered, QGraphicsSceneHoverEvent* event)
 {
-  hovered?
-  setFillColor(locked()? kLockedHoverColor : kUnlockedHoverColor) :
-  setFillColor(locked()? kLockedFillColor : kUnlockedFillColor);
+  setFillColor(hovered ? (locked() ? kLockedHoverColor : kUnlockedHoverColor) : (locked() ? kLockedFillColor : kUnlockedFillColor));
 
-  for (auto& node : _group.childNodes())
+  for (auto nodeId : _group.nodeIds())
   {
-    node->nodeGeometry().setHovered(hovered);
-    node->nodeGraphicsObject().update();
+      auto nodeGraphicsObject = _scene.nodeGraphicsObject(nodeId);
+
+      auto nodeScene = nodeGraphicsObject->nodeScene();
+
+      Q_EMIT nodeScene->nodeHovered(nodeId, event->screenPos());
   }
+
   update();
 }
 
 
+
+
+
 void
 GroupGraphicsObject::
-setPossibleChild(QtNodes::NodeGraphicsObject* possibleChild)
+setPossibleChild(NodeId possibleChild)
 {
   _possibleChild = possibleChild;
 }
@@ -213,18 +237,42 @@ setPossibleChild(QtNodes::NodeGraphicsObject* possibleChild)
 
 void
 GroupGraphicsObject::
-unsetPossibleChild()
-{
-  _possibleChild = nullptr;
+unsetPossibleChild(){
+  _possibleChild = InvalidNodeId;
 }
 
 
-std::vector<std::shared_ptr<Connection> >
-GroupGraphicsObject::
-connections() const
-{
-  return _scene.connectionsWithinGroup(group().id());
-}
+// TEST THIS NODE
+//std::vector<std::tuple<QtNodes::NodeId, QtNodes::PortIndex, QtNodes::NodeId, QtNodes::PortIndex>>
+//GroupGraphicsObject::connections() const
+//{
+//  std::vector<std::tuple<NodeId, PortIndex, NodeId, PortIndex>> result;
+
+//  if (auto dataFlowScene = dynamic_cast<FlowScene*>(&_scene))
+//  {
+//      // Itera sobre todas as conexões no cenário
+//      for (const auto& connection : dataFlowScene->connections())
+//      {
+//        // Obtém as informações do nó de origem
+//        auto sourceNodeId = std::get<0>(connection);
+//        auto sourcePortIndex = std::get<1>(connection);
+
+//                // Obtém as informações do nó de destino
+//        auto destNodeId = std::get<2>(connection);
+//        auto destPortIndex = std::get<3>(connection);
+
+//                // Verifica se ambas as extremidades da conexão estão dentro do grupo
+//        if (group().containsNode(sourceNodeId) && group().containsNode(destNodeId))
+//        {
+//          result.emplace_back(sourceNodeId, sourcePortIndex, destNodeId, destPortIndex);
+//        }
+//      }
+//  }
+
+//  return result;
+//}
+
+
 
 
 void
@@ -242,7 +290,7 @@ GroupGraphicsObject::
 hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
   Q_UNUSED(event);
-  setHovered(true);
+  setHovered(true, event);
 }
 
 void
@@ -250,7 +298,7 @@ GroupGraphicsObject::
 hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
   Q_UNUSED(event);
-  setHovered(false);
+  setHovered(false, event);
 }
 
 void
@@ -271,7 +319,8 @@ GroupGraphicsObject::
 mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
   QGraphicsItem::mouseDoubleClickEvent(event);
-  lock(!locked());
+  // TODO
+  //  lock(!locked());
 }
 
 

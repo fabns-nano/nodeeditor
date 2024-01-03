@@ -2,86 +2,38 @@
 
 #include <QtGui/QPainter>
 
-namespace QtNodes
-{
+#include "Definitions.hpp"
 
-class Node;
-class NodeState;
+namespace QtNodes {
+
+class BasicGraphicsScene;
+class GraphModel;
 class NodeGeometry;
 class NodeGraphicsObject;
-class NodeDataModel;
-class NodeStyle;
-class FlowItemEntry;
-class FlowScene;
+class NodeState;
 
-class NodePainter
-{
-public:
-
+/// @ Lightweight class incapsulating paint code.
+class NodePainter {
+ public:
   NodePainter();
 
-public:
+ public:
+  static void paint(QPainter* painter, NodeGraphicsObject const& ngo);
 
-  static
-  void
-  paint(QPainter* painter,
-        Node& node,
-        FlowScene const& scene);
+  static void drawNodeRect(QPainter* painter, NodeGraphicsObject const& ngo);
 
-  static
-  void
-  drawNodeRect(QPainter* painter,
-               NodeGeometry const& geom,
-               NodeDataModel const* model,
-               NodeGraphicsObject const & graphicsObject);
+  static void drawConnectionPoints(QPainter* painter,
+                                   NodeGraphicsObject const& ngo);
+  static void drawModelNickname(QPainter* painter,
+                                NodeGraphicsObject const& ngo);
+  static void drawFilledConnectionPoints(QPainter* painter,
+                                         NodeGraphicsObject const& ngo);
 
-  static
-  void
-  drawModelName(QPainter* painter,
-                NodeGeometry const& geom,
-                NodeState const& state,
-                NodeDataModel const * model);
+  static void drawNodeCaption(QPainter* painter, NodeGraphicsObject const& ngo);
 
-  static
-  void
-  drawModelNickname(QPainter* painter,
-                    NodeGeometry const& geom,
-                    NodeDataModel const * model);
+  static void drawEntryLabels(QPainter* painter, NodeGraphicsObject const& ngo);
 
-  static
-  void
-  drawEntryLabels(QPainter* painter,
-                  NodeGeometry const& geom,
-                  NodeState const& state,
-                  NodeDataModel const * model);
-
-  static
-  void
-  drawConnectionPoints(QPainter* painter,
-                       NodeGeometry const& geom,
-                       NodeState const& state,
-                       NodeDataModel const * model,
-                       FlowScene const & scene);
-
-  static
-  void
-  drawFilledConnectionPoints(QPainter* painter,
-                             NodeGeometry const& geom,
-                             NodeState const& state,
-                             NodeDataModel const * model);
-
-  static
-  void
-  drawResizeRect(QPainter* painter,
-                 NodeGeometry const& geom,
-                 NodeDataModel const * model);
-
-  static
-  void
-  drawValidationRect(QPainter * painter,
-                     NodeGeometry const & geom,
-                     NodeDataModel const * model,
-                     NodeGraphicsObject const & graphicsObject);
+  static void drawResizeRect(QPainter* painter, NodeGraphicsObject const& ngo);
 
   /**
    * @brief Draws the icon indicating the node's current processing status.
@@ -89,10 +41,7 @@ public:
    * @param geom Node geometry
    * @param model Node model
    */
-  static
-  void
-  drawStatusIcon(QPainter * painter,
-                 NodeGeometry const & geom);
+  static void drawStatusIcon(QPainter* painter, NodeGraphicsObject const& ngo);
 
   /**
    * @brief Draws the progress value percentage in the processing node.
@@ -100,12 +49,8 @@ public:
    * @param geom Node geometry
    * @param model Node model
    */
-  static
-  void
-  drawProgressValue(QPainter * painter,
-                    NodeGeometry const & geom,
-                    NodeStyle const & nodeStyle,
-                    QString const & nodeProgress);
-
+  static void drawProgressValue(QPainter* painter,
+                                NodeGraphicsObject const& ngo,
+                                QString const& nodeProgress);
 };
-}
+}  // namespace QtNodes

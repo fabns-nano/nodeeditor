@@ -1,235 +1,132 @@
 #pragma once
 
-#include <QtCore/QRectF>
-#include <QtCore/QPointF>
-#include <QtGui/QTransform>
-#include <QtGui/QFontMetrics>
 #include <QIcon>
+#include <QtCore/QPointF>
+#include <QtCore/QRectF>
+#include <QtGui/QFontMetrics>
+#include <QtGui/QTransform>
 
-#include "PortType.hpp"
+#include "Definitions.hpp"
 #include "Export.hpp"
-#include "memory.hpp"
 
-
-namespace QtNodes
-{
+namespace QtNodes {
 
 class NodeDataModel;
-class NodeState;
-class Node;
+class GraphModel;
+class NodeGraphicsObject;
+
 enum class NodeProcessingStatus;
 /**
  * @brief The NodeGeometry class holds the aspects of a node's graphical object
  * geometry in the FlowScene, such as the position of each port within a node.
  * Each connection is associated with a unique geometry object.
  */
-class NODE_EDITOR_PUBLIC NodeGeometry
-{
-public:
 
-  NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel);
+/**
+ * A helper-class for manipulating the node's geometry.
+ * It is designed to be constructed on stack and used in-place.
+ * The class is in essense a wrapper around the GraphModel.
+ */
+class NODE_EDITOR_PUBLIC NodeGeometry {
+ public:
+  NodeGeometry(NodeGraphicsObject const& ngo);
 
-public:
-  unsigned int
-  height() const
-  {
-    return _height;
-  }
+ public:
+  unsigned int entryHeight() const;
 
-  void
-  setHeight(unsigned int h)
-  {
-    _height = h;
-  }
+  unsigned int verticalSpacing() const;
 
-  unsigned int
-  width() const
-  {
-    return _width;
-  }
+ public:
+  QRectF boundingRect() const;
 
-  void
-  setWidth(unsigned int w)
-  {
-    _width = w;
-  }
-
-  unsigned int
-  entryHeight() const
-  {
-    return _entryHeight;
-  }
-  void
-  setEntryHeight(unsigned int h)
-  {
-    _entryHeight = h;
-  }
-
-  unsigned int
-  entryWidth() const
-  {
-    return _entryWidth;
-  }
-
-  void
-  setEntryWidth(unsigned int w)
-  {
-    _entryWidth = w;
-  }
-
-  unsigned int
-  spacing() const
-  {
-    return _spacing;
-  }
-
-  void
-  setSpacing(unsigned int s)
-  {
-    _spacing = s;
-  }
-
-  bool
-  hovered() const
-  {
-    return _hovered;
-  }
-
-  void
-  setHovered(unsigned int h)
-  {
-    _hovered = h;
-  }
-
-  unsigned int
-  nSources() const;
-
-  unsigned int
-  nSinks() const;
-
-  QPointF const&
-  draggingPos() const
-  {
-    return _draggingPos;
-  }
-
-  void
-  setDraggingPosition(QPointF const& pos)
-  {
-    _draggingPos = pos;
-  }
-
-public:
-
-  QRectF
-  entryBoundingRect() const;
-
-  QRectF
-  boundingRect() const;
+  QSize size() const;
 
   /// Updates size unconditionally
-  void
-  recalculateSize() const;
+  QSize recalculateSize() const;
 
   /// Updates size if the QFontMetrics is changed
-  void
-  recalculateSize(QFont const &font) const;
+  QSize recalculateSizeIfFontChanged(QFont const& font) const;
 
-  // TODO removed default QTransform()
-  QPointF
-  portScenePosition(PortIndex index,
-                    PortType portType,
-                    QTransform const & t = QTransform()) const;
+  QPointF portNodePosition(PortType const portType,
+                           PortIndex const index) const;
 
-  PortIndex
-  checkHitScenePoint(PortType portType,
-                     QPointF point,
-                     QTransform const & t = QTransform()) const;
+  QPointF portScenePosition(PortType const portType,
+                            PortIndex const index,
+                            QTransform const& t) const;
 
-  QRect
-  resizeRect() const;
+  PortIndex checkHitScenePoint(PortType portType,
+                               QPointF point,
+                               QTransform const& t = QTransform()) const;
+
+  QRect resizeRect() const;
 
   /// Returns the position of a widget on the Node surface
-  QPointF
-  widgetPosition() const;
+  QPointF widgetPosition() const;
 
-  /// Returns the maximum height a widget can be without causing the node to grow.
-  int
-  equivalentWidgetHeight() const;
+  /// Returns the maximum height a widget can be without causing the node to
+  /// grow.
+  int equivalentWidgetHeight() const;
 
-  unsigned int
-  validationHeight() const;
+  // unsigned int validationHeight() const;
 
-  unsigned int
-  validationWidth() const;
+  // unsigned int validationWidth() const;
 
-  static
-  QPointF
-  calculateNodePositionBetweenNodePorts(PortIndex targetPortIndex, PortType targetPort, Node* targetNode,
-                                        PortIndex sourcePortIndex, PortType sourcePort, Node* sourceNode,
-                                        Node& newNode);
+  // static
+  // QPointF calculateNodePositionBetweenNodePorts(PortIndex targetPortIndex,
+  // PortType targetPort, Node * targetNode, PortIndex sourcePortIndex, PortType
+  // sourcePort, Node * sourceNode, Node & newNode);
 
   /**
    * @brief Updates the space reserved for the status icon based on the
    * model's current status.
    */
-  void
-  updateStatusIconSize() const;
+  void updateStatusIconSize() const;
 
   /**
    * @brief Returns the size (width and height) of the icon that indicates
    * the node's current processing status.
    */
-  QSize
-  statusIconSize() const;
+  QSize statusIconSize() const;
 
   /**
    * @brief Returns the dimensions of the icon that indicates the node's
    * current processing status.
    */
-  QRect
-  statusIconRect() const;
+  QRect statusIconRect() const;
 
   /**
-   * @brief Returns the icon associated with the model's current processing status.
+   * @brief Returns the icon associated with the model's current processing
+   * status.
    */
-  const QIcon&
-  processingStatusIcon() const;
+  const QIcon& processingStatusIcon() const;
 
-private:
+ private:
+  unsigned int captionHeight() const;
 
-  unsigned int
-  captionHeight() const;
+  unsigned int captionWidth() const;
 
-  unsigned int
-  captionWidth() const;
+  unsigned int nicknameHeight() const;
 
-  unsigned int
-  nicknameHeight() const;
+  unsigned int nicknameWidth() const;
 
-  unsigned int
-  nicknameWidth() const;
+  unsigned int portWidth(PortType portType) const;
 
-  unsigned int
-  portWidth(PortType portType) const;
-
-private:
+ private:
+  NodeGraphicsObject const& _ngo;
+  GraphModel& _graphModel;
 
   // some variables are mutable because
   // we need to change drawing metrics
   // corresponding to fontMetrics
   // but this doesn't change constness of Node
 
-  mutable unsigned int _width;
-  mutable unsigned int _height;
-  unsigned int _entryWidth;
-  mutable unsigned int _inputPortWidth;
-  mutable unsigned int _outputPortWidth;
+  mutable unsigned int _defaultInPortWidth;
+  mutable unsigned int _defaultOutPortWidth;
   mutable unsigned int _entryHeight;
+  unsigned int _verticalSpacing;
+  mutable QFontMetrics _fontMetrics;
+  mutable QFontMetrics _boldFontMetrics;
   mutable QSize _statusIconSize;
-  unsigned int _spacing;
-
-  bool _hovered;
 
   /**
    * @brief Flag indicating whether the processing status icon should be part
@@ -237,12 +134,7 @@ private:
    */
   mutable bool _statusIconActive;
 
-  QPointF _draggingPos;
-
-  std::unique_ptr<NodeDataModel> const &_dataModel;
-
-  mutable QFontMetrics _fontMetrics;
-  mutable QFontMetrics _boldFontMetrics;
+//  std::unique_ptr<NodeDataModel> const& _dataModel;
 
   /**
    * @brief Processing status icons
@@ -254,5 +146,11 @@ private:
   const QIcon _statusEmpty{"://status_icons/empty.svg"};
   const QIcon _statusPartial{"://status_icons/partial.svg"};
 
+  unsigned int _entryWidth;  // TODO: where was is used?
+
+  unsigned int _nSources;  // TODO: where was it used?
+  unsigned int _nSinks;
+
+  QPointF _draggingPos;
 };
-}
+}  // namespace QtNodes

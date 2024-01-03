@@ -1,15 +1,11 @@
 #include "ConnectionStyle.hpp"
 
 #include "StyleCollection.hpp"
+#include "qjsonarray.h"
 
-#include <QDebug>
-#include <QRandomGenerator>
-#include <QtCore/QFile>
-#include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonValueRef>
-
 
 #include <random>
 
@@ -72,6 +68,9 @@ void ConnectionStyle::setConnectionStyle(QString jsonText) {
     }                                                                      \
   }
 
+#define CONNECTION_STYLE_WRITE_COLOR(values, variable) \
+  { values[#variable] = variable.name(); }
+
 #define CONNECTION_STYLE_READ_FLOAT(values, variable)          \
   {                                                            \
     auto valueRef = values[#variable];                         \
@@ -79,6 +78,9 @@ void ConnectionStyle::setConnectionStyle(QString jsonText) {
     if (CONNECTION_VALUE_EXISTS(valueRef))                     \
       variable = valueRef.toDouble();                          \
   }
+
+#define CONNECTION_STYLE_WRITE_FLOAT(values, variable) \
+  { values[#variable] = variable; }
 
 #define CONNECTION_STYLE_READ_BOOL(values, variable)           \
   {                                                            \
@@ -88,25 +90,13 @@ void ConnectionStyle::setConnectionStyle(QString jsonText) {
       variable = valueRef.toBool();                            \
   }
 
-void ConnectionStyle::loadJsonFile(QString styleFile) {
-  QFile file(styleFile);
+#define CONNECTION_STYLE_WRITE_BOOL(values, variable) \
+  { values[#variable] = variable; }
 
-  if (!file.open(QIODevice::ReadOnly)) {
-    qWarning() << "Couldn't open file " << styleFile;
-
-    return;
-  }
-
-  loadJsonFromByteArray(file.readAll());
-}
-
-void ConnectionStyle::loadJsonText(QString jsonText) {
-  loadJsonFromByteArray(jsonText.toUtf8());
-}
-
-void ConnectionStyle::loadJsonFromByteArray(QByteArray const& byteArray) {
-  QJsonDocument json(QJsonDocument::fromJson(byteArray));
-
+void
+    ConnectionStyle::
+    loadJson(QJsonDocument const & json)
+{
   QJsonObject topLevelObject = json.object();
 
   QJsonValueRef nodeStyleValues = topLevelObject["ConnectionStyle"];
@@ -118,13 +108,33 @@ void ConnectionStyle::loadJsonFromByteArray(QByteArray const& byteArray) {
   CONNECTION_STYLE_READ_COLOR(obj, SelectedColor);
   CONNECTION_STYLE_READ_COLOR(obj, SelectedHaloColor);
   CONNECTION_STYLE_READ_COLOR(obj, HoveredColor);
-  CONNECTION_STYLE_READ_COLOR(obj, FrozenColor);
 
   CONNECTION_STYLE_READ_FLOAT(obj, LineWidth);
   CONNECTION_STYLE_READ_FLOAT(obj, ConstructionLineWidth);
   CONNECTION_STYLE_READ_FLOAT(obj, PointDiameter);
 
   CONNECTION_STYLE_READ_BOOL(obj, UseDataDefinedColors);
+}
+
+QJsonDocument ConnectionStyle::toJson() const {
+  QJsonObject obj;
+
+  CONNECTION_STYLE_WRITE_COLOR(obj, ConstructionColor);
+  CONNECTION_STYLE_WRITE_COLOR(obj, NormalColor);
+  CONNECTION_STYLE_WRITE_COLOR(obj, SelectedColor);
+  CONNECTION_STYLE_WRITE_COLOR(obj, SelectedHaloColor);
+  CONNECTION_STYLE_WRITE_COLOR(obj, HoveredColor);
+
+  CONNECTION_STYLE_WRITE_FLOAT(obj, LineWidth);
+  CONNECTION_STYLE_WRITE_FLOAT(obj, ConstructionLineWidth);
+  CONNECTION_STYLE_WRITE_FLOAT(obj, PointDiameter);
+
+  CONNECTION_STYLE_WRITE_BOOL(obj, UseDataDefinedColors);
+
+  QJsonObject root;
+  root["ConnectionStyle"] = obj;
+
+  return QJsonDocument(root);
 }
 
 QColor ConnectionStyle::constructionColor() const {
