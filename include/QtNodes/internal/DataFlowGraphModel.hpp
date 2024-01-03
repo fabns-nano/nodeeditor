@@ -74,6 +74,16 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
 
   void load(QJsonDocument const& json);
 
+  void load(QJsonDocument const& json);
+
+  QJsonObject saveNode(NodeId const) const override;
+
+  void loadNode(QJsonObject const& nodeJson) override;
+
+  QJsonObject saveConnection(ConnectionId const& connId) const override;
+
+  void loadConnection(QJsonObject const& connJson) override;
+
  private:
   NodeId newNodeId() { return _nextNodeId++; }
 
@@ -82,17 +92,9 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
    * and the NodeId values are already known.
    */
   NodeId newNodeId(NodeId const restoredNodeId) {
-    _nextNodeId = restoredNodeId;
-    return _nextNodeId++;
+    _nextNodeId = std::max(_nextNodeId, restoredNodeId);
+    return restoredNodeId;
   }
-
-  QJsonObject saveNode(NodeId const) const;
-
-  void loadNode(QJsonObject const& nodeJson);
-
-  QJsonObject saveConnection(ConnectionId const& connId) const;
-
-  void loadConnection(QJsonObject const& connJson);
 
  private Q_SLOTS:
   /**

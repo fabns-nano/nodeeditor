@@ -87,7 +87,6 @@ public:
   centerScene();
 
 public Q_SLOTS:
-
   void
   scaleUp();
 
@@ -95,10 +94,9 @@ public Q_SLOTS:
   scaleDown();
 
   void
-  deleteSelectedObjects();
+  onDeleteSelectedObjects();
 
 protected:
-
   void
   contextMenuEvent(QContextMenuEvent *event) override;
 
@@ -124,12 +122,10 @@ protected:
   showEvent(QShowEvent *event) override;
 
 protected:
-
   BasicGraphicsScene *
   nodeScene();
 
 private:
-
   QAction* _clearSelectionAction;
   QAction* _deleteSelectionAction;
 
