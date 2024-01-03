@@ -173,7 +173,7 @@ void NodeGraphicsObject::paint(QPainter* painter,
 
 QVariant NodeGraphicsObject::itemChange(GraphicsItemChange change,
                                         const QVariant& value) {
-  if (change == ItemPositionChange && scene()) {
+  if (change == ItemScenePositionHasChanged && scene()) {
     moveConnections();
   }
 
