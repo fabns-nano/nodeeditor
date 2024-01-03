@@ -109,9 +109,9 @@ onNodeSizeUpdated()
   nodeGeometry().recalculateSize();
   for (PortType type: {PortType::In, PortType::Out})
   {
-    for (auto & conn_set : nodeState().getEntries(type))
+    for (auto& conn_set : nodeState().getEntries(type))
     {
-      for (auto & pair: conn_set)
+      for (auto& pair: conn_set)
       {
         Connection* conn = pair.second;
         conn->getConnectionGraphicsObject().move();
