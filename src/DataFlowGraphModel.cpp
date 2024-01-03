@@ -375,7 +375,7 @@ QJsonObject DataFlowGraphModel::save() const {
 
   QJsonArray connJsonArray;
   for (auto const& cid : _connectivity) {
-    connJsonArray.append(saveConnection(cid));
+    connJsonArray.append(toJson(cid));
   }
   sceneJson["connections"] = connJsonArray;
 
@@ -423,36 +423,20 @@ void DataFlowGraphModel::loadNode(QJsonObject const& nodeJson) {
 void DataFlowGraphModel::load(QJsonObject const& jsonDocument) {
   QJsonArray nodesJsonArray = jsonDocument["nodes"].toArray();
 
-  for (QJsonValueRef node : nodesJsonArray) {
-    loadNode(node.toObject());
+  for (QJsonValueRef nodeJson : nodesJsonArray) {
+    loadNode(nodeJson.toObject());
   }
 
   QJsonArray connectionJsonArray = jsonDocument["connections"].toArray();
 
   for (QJsonValueRef connection : connectionJsonArray) {
-    loadConnection(connection.toObject());
+    QJsonObject connJson = connection.toObject();
+
+    ConnectionId connId = fromJson(connJson);
+
+    // Restore the connection
+    addConnection(connId);
   }
-}
-
-QJsonObject DataFlowGraphModel::saveConnection(
-    ConnectionId const& connId) const {
-  QJsonObject connJson;
-
-  connJson["outNodeId"] = static_cast<qint64>(connId.outNodeId);
-  connJson["outPortIndex"] = static_cast<qint64>(connId.outPortIndex);
-  connJson["intNodeId"] = static_cast<qint64>(connId.inNodeId);
-  connJson["inPortIndex"] = static_cast<qint64>(connId.inPortIndex);
-
-  return connJson;
-}
-
-void DataFlowGraphModel::loadConnection(QJsonObject const& connJson) {
-  ConnectionId connId{static_cast<NodeId>(connJson["outNodeId"].toInt()),
-                      static_cast<PortIndex>(connJson["outPortIndex"].toInt()),
-                      static_cast<NodeId>(connJson["intNodeId"].toInt()),
-                      static_cast<PortIndex>(connJson["inPortIndex"].toInt())};
-
-  addConnection(connId);
 }
 
 void DataFlowGraphModel::onOutPortDataUpdated(NodeId const nodeId,
