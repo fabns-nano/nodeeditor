@@ -31,6 +31,7 @@ class NodeGraphicsObject : public QGraphicsObject {
   BasicGraphicsScene* nodeScene() const;
 
   NodeId nodeId() { return _nodeId; }
+
   NodeId nodeId() const { return _nodeId; }
 
   NodeState& nodeState() { return _nodeState; }
