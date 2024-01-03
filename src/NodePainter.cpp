@@ -88,7 +88,7 @@ void NodePainter::drawNodeRect(QPainter* painter,
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
 
-  NodeStyle nodeStyle(json);
+  NodeStyle nodeStyle(json.object());
 
   auto color = ngo.isSelected() ? nodeStyle.SelectedBoundaryColor
                                 : nodeStyle.NormalBoundaryColor;
@@ -140,7 +140,7 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
+  NodeStyle nodeStyle(json.object());
 
   auto const& connectionStyle = StyleCollection::connectionStyle();
 
@@ -213,7 +213,7 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
+  NodeStyle nodeStyle(json.object());
 
   auto diameter = nodeStyle.ConnectionPointDiameter;
 
@@ -281,7 +281,7 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
+  NodeStyle nodeStyle(json.object());
 
   painter->setFont(font);
   painter->setPen(nodeStyle.FontColor);
@@ -299,7 +299,7 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
+  NodeStyle nodeStyle(json.object());
 
   QSize size = geom.size();
 

@@ -3,7 +3,6 @@
 #include "StyleCollection.hpp"
 #include "qjsonarray.h"
 
-#include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonValueRef>
 
@@ -93,13 +92,8 @@ void ConnectionStyle::setConnectionStyle(QString jsonText) {
 #define CONNECTION_STYLE_WRITE_BOOL(values, variable) \
   { values[#variable] = variable; }
 
-void
-    ConnectionStyle::
-    loadJson(QJsonDocument const & json)
-{
-  QJsonObject topLevelObject = json.object();
-
-  QJsonValueRef nodeStyleValues = topLevelObject["ConnectionStyle"];
+void ConnectionStyle::loadJson(QJsonObject const& json) {
+  QJsonValue nodeStyleValues = json["ConnectionStyle"];
 
   QJsonObject obj = nodeStyleValues.toObject();
 
@@ -116,7 +110,7 @@ void
   CONNECTION_STYLE_READ_BOOL(obj, UseDataDefinedColors);
 }
 
-QJsonDocument ConnectionStyle::toJson() const {
+QJsonObject ConnectionStyle::toJson() const {
   QJsonObject obj;
 
   CONNECTION_STYLE_WRITE_COLOR(obj, ConstructionColor);
@@ -134,7 +128,7 @@ QJsonDocument ConnectionStyle::toJson() const {
   QJsonObject root;
   root["ConnectionStyle"] = obj;
 
-  return QJsonDocument(root);
+  return root;
 }
 
 QColor ConnectionStyle::constructionColor() const {
