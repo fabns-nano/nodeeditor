@@ -17,9 +17,8 @@ namespace QtNodes {
 
 void DefaultNodePainter::paint(QPainter* painter,
                                NodeGraphicsObject& ngo) const {
-  AbstractNodeGeometry& geometry = ngo.nodeScene()->nodeGeometry();
-
   // TODO?
+  // AbstractNodeGeometry & geometry = ngo.nodeScene()->nodeGeometry();
   // geometry.recomputeSizeIfFontChanged(painter->font());
 
   drawNodeRect(painter, ngo);

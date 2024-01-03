@@ -32,6 +32,8 @@ ConnectionPolicy NodeDelegateModel::portConnectionPolicy(PortType portType,
     case PortType::Out:
       result = ConnectionPolicy::Many;
       break;
+    case PortType::None:
+      break;
   }
 
   return result;
