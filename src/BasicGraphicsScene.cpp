@@ -6,7 +6,8 @@
 #include <unordered_set>
 #include <utility>
 
-#include <QtWidgets/QFileDialog>
+#include <QtGui/QUndoStack>
+
 #include <QtWidgets/QGraphicsSceneMoveEvent>
 
 #include <QtCore/QBuffer>
@@ -18,8 +19,6 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QtGlobal>
 
-#include <QtCore/QDebug>
-
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
 #include "GraphicsView.hpp"
@@ -29,7 +28,9 @@ namespace QtNodes {
 
 BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel& graphModel,
                                        QObject* parent)
-    : QGraphicsScene(parent), _graphModel(graphModel) {
+    : QGraphicsScene(parent),
+      _graphModel(graphModel),
+      _undoStack(new QUndoStack(this)) {
   setItemIndexMethod(QGraphicsScene::NoIndex);
 
   connect(&_graphModel, &AbstractGraphModel::connectionCreated, this,
@@ -70,6 +71,10 @@ AbstractGraphModel const& BasicGraphicsScene::graphModel() const {
 
 AbstractGraphModel& BasicGraphicsScene::graphModel() {
   return _graphModel;
+}
+
+QUndoStack& BasicGraphicsScene::undoStack() {
+  return *_undoStack;
 }
 
 std::unique_ptr<ConnectionGraphicsObject> const&

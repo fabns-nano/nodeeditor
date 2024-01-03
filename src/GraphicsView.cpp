@@ -1,29 +1,26 @@
 #include "GraphicsView.hpp"
 
+#include "BasicGraphicsScene.hpp"
+#include "ConnectionGraphicsObject.hpp"
+#include "NodeGraphicsObject.hpp"
+#include "StyleCollection.hpp"
+#include "UndoCommands.hpp"
+
 #include <QtWidgets/QGraphicsScene>
 
 #include <QtGui/QBrush>
 #include <QtGui/QPen>
 #include <QtWidgets/QMenu>
 
-
 #include <QtCore/QDebug>
 #include <QtCore/QPointF>
 #include <QtCore/QRectF>
-
 
 #include <QtOpenGL>
 #include <QtWidgets>
 
 #include <cmath>
 #include <iostream>
-
-
-#include "BasicGraphicsScene.hpp"
-#include "ConnectionGraphicsObject.hpp"
-#include "NodeGraphicsObject.hpp"
-#include "StyleCollection.hpp"
-
 
 using QtNodes::BasicGraphicsScene;
 using QtNodes::GraphicsView;
@@ -112,50 +109,13 @@ void GraphicsView::setScene(BasicGraphicsScene* scene) {
 
   addAction(_deleteSelectionAction);
 
-  if (_copySelectionAction != nullptr)
-    delete _copySelectionAction;
-  _copySelectionAction = new QAction(QStringLiteral("Copy"), this);
-  _copySelectionAction->setShortcut(QKeySequence::Copy);
-  _copySelectionAction->setEnabled(false);
-  connect(_copySelectionAction, &QAction::triggered, this,
-          &GraphicsView::copySelectionToClipboard);
-  addAction(_copySelectionAction);
+  auto undoAction = scene->undoStack().createUndoAction(this, tr("&Undo"));
+  undoAction->setShortcuts(QKeySequence::Undo);
+  addAction(undoAction);
 
-  if (_cutSelectionAction != nullptr)
-    delete _cutSelectionAction;
-  _cutSelectionAction = new QAction(QStringLiteral("Cut"), this);
-  _cutSelectionAction->setShortcut(QKeySequence::Cut);
-  _cutSelectionAction->setEnabled(false);
-  connect(_cutSelectionAction, &QAction::triggered, this,
-          &GraphicsView::cutSelectionToClipboard);
-  addAction(_cutSelectionAction);
-
-  if (_pasteClipboardAction != nullptr)
-    delete _pasteClipboardAction;
-  _pasteClipboardAction = new QAction(QStringLiteral("Paste"), this);
-  _pasteClipboardAction->setShortcut(QKeySequence::Paste);
-  _pasteClipboardAction->setEnabled(false);
-  connect(_pasteClipboardAction, &QAction::triggered, this,
-          &GraphicsView::pasteFromClipboard);
-  addAction(_pasteClipboardAction);
-
-  if (_createGroupFromSelectionAction != nullptr)
-    delete _createGroupFromSelectionAction;
-  _createGroupFromSelectionAction =
-      new QAction(QStringLiteral("Create group from selection"), this);
-  _createGroupFromSelectionAction->setEnabled(false);
-  connect(_createGroupFromSelectionAction, &QAction::triggered, [&, this]() {
-    //            scene->createGroupFromSelection();
-  });
-  addAction(_createGroupFromSelectionAction);
-
-  if (_loadGroupAction != nullptr)
-    delete _loadGroupAction;
-  _loadGroupAction = new QAction(QStringLiteral("Load Group..."), this);
-  _createGroupFromSelectionAction->setEnabled(true);
-  connect(_loadGroupAction, &QAction::triggered, this,
-          &GraphicsView::handleLoadGroup);
-  addAction(_loadGroupAction);
+  auto redoAction = scene->undoStack().createRedoAction(this, tr("&Redo"));
+  redoAction->setShortcuts(QKeySequence::Redo);
+  addAction(redoAction);
 }
 
 void GraphicsView::centerScene() {
@@ -224,25 +184,7 @@ void GraphicsView::scaleDown() {
 }
 
 void GraphicsView::onDeleteSelectedObjects() {
-  // Delete the selected connections first, ensuring that they won't be
-  // automatically deleted when selected nodes are deleted (deleting a
-  // node deletes some connections as well)
-  for (QGraphicsItem* item : scene()->selectedItems()) {
-    if (auto c = qgraphicsitem_cast<ConnectionGraphicsObject*>(item)) {
-      nodeScene()->graphModel().deleteConnection(c->connectionId());
-    }
-  }
-
-  // Delete the nodes; this will delete many of the connections.
-  // Selected connections were already deleted prior to this loop,
-  // otherwise qgraphicsitem_cast<NodeGraphicsObject*>(item) could be a
-  // use-after-free when a selected connection is deleted by deleting
-  // the node.
-  for (QGraphicsItem* item : scene()->selectedItems()) {
-    if (auto n = qgraphicsitem_cast<NodeGraphicsObject*>(item)) {
-      nodeScene()->graphModel().deleteNode(n->nodeId());
-    }
-  }
+  nodeScene()->undoStack().push(new DeleteCommand(nodeScene()));
 }
 
 void GraphicsView::keyPressEvent(QKeyEvent* event) {

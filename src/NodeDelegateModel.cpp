@@ -12,7 +12,7 @@ NodeDelegateModel::NodeDelegateModel()
 QJsonObject NodeDelegateModel::save() const {
   QJsonObject modelJson;
 
-  modelJson["name"] = name();
+  modelJson["model-name"] = name();
   modelJson["nickname"] = nickname();
 
   return modelJson;

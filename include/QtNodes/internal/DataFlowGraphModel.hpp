@@ -70,15 +70,15 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
 
   bool deleteNode(NodeId const nodeId) override;
 
-  QJsonDocument save() const;
-
-  void load(QJsonDocument const& json);
-
-  void load(QJsonDocument const& json);
+  bool deleteNode(NodeId const nodeId) override;
 
   QJsonObject saveNode(NodeId const) const override;
 
+  QJsonDocument save() const;
+
   void loadNode(QJsonObject const& nodeJson) override;
+
+  void load(QJsonDocument const& json);
 
   QJsonObject saveConnection(ConnectionId const& connId) const override;
 
@@ -89,11 +89,12 @@ class NODE_EDITOR_PUBLIC DataFlowGraphModel : public AbstractGraphModel {
 
   /**
    * The function could be used when we restore nodes from some file
-   * and the NodeId values are already known.
+   * and the NodeId values are already known.  In this case we must
+   * update internal counter for unique "next" node id in order not to
+   * repeat the values when incrementing.
    */
-  NodeId newNodeId(NodeId const restoredNodeId) {
-    _nextNodeId = std::max(_nextNodeId, restoredNodeId);
-    return restoredNodeId;
+  void setNextNodeId(NodeId const restoredNodeId) {
+    _nextNodeId = std::max(_nextNodeId, restoredNodeId + 1);
   }
 
  private Q_SLOTS:

@@ -2,6 +2,8 @@
 
 #include <QtCore/QDebug>
 
+#include <QtGui/QUndoStack>
+
 #include <iostream>
 
 #include "BasicGraphicsScene.hpp"
@@ -9,6 +11,7 @@
 #include "ConnectionIdUtils.hpp"
 #include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
+#include "UndoCommands.hpp"
 
 namespace QtNodes {
 
@@ -77,14 +80,8 @@ bool NodeConnectionInteraction::tryConnect() const {
 
   _ngo.nodeScene()->resetDraftConnection();
 
-  // 3. Adjust Connection geometry.
-
-  //_ngo.moveConnections();
-  //_ngo.nodeState().resetReactionToConnection();
-
-  AbstractGraphModel& model = _ngo.nodeScene()->graphModel();
-
-  model.addConnection(newConnectionId);
+  _ngo.nodeScene()->undoStack().push(
+      new ConnectCommand(_ngo.nodeScene(), newConnectionId));
 
   return true;
 }
@@ -92,7 +89,7 @@ bool NodeConnectionInteraction::tryConnect() const {
 bool NodeConnectionInteraction::disconnect(PortType portToDisconnect) const {
   ConnectionId connectionId = _cgo.connectionId();
 
-  _scene.graphModel().deleteConnection(connectionId);
+  _scene.undoStack().push(new DisconnectCommand(&_scene, connectionId));
 
   NodeGeometry nodeGeometry(_ngo);
 
