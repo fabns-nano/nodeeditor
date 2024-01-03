@@ -34,7 +34,7 @@ namespace QtNodes {
 DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel& graphModel,
                                              QObject* parent)
     : BasicGraphicsScene(graphModel, parent), _graphModel(graphModel) {
-  connect(&_graphModel, &AbstractGraphModel::portDataSet, this,
+  connect(&_graphModel, &AbstractGraphModel::inPortDataWasSet, this,
           &DataFlowGraphicsScene::onPortDataSet);
 }
 
