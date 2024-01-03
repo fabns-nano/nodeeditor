@@ -26,6 +26,9 @@ NodeGeometry::NodeGeometry(NodeGraphicsObject const& ngo)
       _verticalSpacing(20),
       _fontMetrics(QFont()),
       _boldFontMetrics(QFont()) {
+  Q_UNUSED(_defaultInPortWidth);
+  Q_UNUSED(_defaultOutPortWidth);
+
   QFont f;
   f.setBold(true);
 
@@ -60,9 +63,6 @@ unsigned int NodeGeometry::verticalSpacing() const {
 }
 
 QRectF NodeGeometry::boundingRect() const {
-  NodeId nodeId = _ngo.nodeId();
-
-  auto const& style = _graphModel.nodeData(nodeId, NodeRole::Style);
   auto const& nodeStyle = StyleCollection::nodeStyle();
 
   float addon = 2 * nodeStyle.ConnectionPointDiameter;
