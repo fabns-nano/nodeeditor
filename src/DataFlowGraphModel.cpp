@@ -330,8 +330,12 @@ bool DataFlowGraphModel::setPortData(NodeId nodeId,
 
   switch (role) {
     case PortRole::Data:
-      if (portType == PortType::In)
+      if (portType == PortType::In) {
         model->setInData(value.value<std::shared_ptr<NodeData>>(), portIndex);
+
+        // Triggers repainting on the scene.
+        Q_EMIT inPortDataWasSet(nodeId, portType, portIndex);
+      }
       break;
 
     default:
@@ -411,7 +415,7 @@ QJsonObject DataFlowGraphModel::saveNode(NodeId const nodeId) const {
   return nodeJson;
 }
 
-QJsonDocument DataFlowGraphModel::save() const {
+QJsonObject DataFlowGraphModel::save() const {
   QJsonObject sceneJson;
 
   QJsonArray nodesJsonArray;
@@ -435,7 +439,7 @@ QJsonDocument DataFlowGraphModel::save() const {
   }
   sceneJson["connections"] = connJsonArray;
 
-  return QJsonDocument(sceneJson);
+  return sceneJson;
 }
 
 void DataFlowGraphModel::loadNode(QJsonObject const& nodeJson) {
@@ -470,9 +474,7 @@ void DataFlowGraphModel::loadNode(QJsonObject const& nodeJson) {
   }
 }
 
-void DataFlowGraphModel::load(QJsonDocument const& json) {
-  QJsonObject const jsonDocument = json.object();
-
+void DataFlowGraphModel::load(QJsonObject const& jsonDocument) {
   QJsonArray nodesJsonArray = jsonDocument["nodes"].toArray();
 
   for (QJsonValueRef node : nodesJsonArray) {
@@ -516,31 +518,14 @@ void DataFlowGraphModel::onOutPortDataUpdated(NodeId const nodeId,
       portData(nodeId, PortType::Out, portIndex, PortRole::Data);
 
   for (auto const& cn : connected) {
-    // When restoring a model from file, not all models are loaded
-    // simultaneously.
-    if (_models.find(cn.inNodeId) == _models.end())
-      continue;
-
     setPortData(cn.inNodeId, PortType::In, cn.inPortIndex, portDataToPropagate,
                 PortRole::Data);
-
-    // Maybe this call should be on the receiving side.
-    Q_EMIT inPortDataWasSet(cn.inNodeId, PortType::In, cn.inPortIndex);
   }
 }
 
-void
+void DataFlowGraphModel::propagateEmptyDataTo(NodeId const nodeId,
+                                              PortIndex const portIndex) {
+  QVariant emptyData{};
 
-DataFlowGraphModel::
-propagateEmptyDataTo(NodeId const    nodeId,
-                     PortIndex const portIndex)
-{
-  auto const emptyData = std::shared_ptr<NodeData>();
-
-  // When restoring a model from file, not all models are loaded simultaneously.
-  if (_models.find(nodeId) != _models.end()) {
-    _models[nodeId]->setInData(emptyData, portIndex);
-
-    Q_EMIT portDataSet(nodeId, PortType::In, portIndex);
-  }
+  setPortData(nodeId, PortType::In, portIndex, emptyData, PortRole::Data);
 }

@@ -33,13 +33,13 @@ namespace QtNodes {
 DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel& graphModel,
                                              QObject* parent)
     : BasicGraphicsScene(graphModel, parent), _graphModel(graphModel) {
-  connect(&_graphModel, &DataFlowGraphModel::inPortDataWasSet, this,
-          &DataFlowGraphicsScene::onPortDataSet);
+  connect(&_graphModel, &DataFlowGraphModel::inPortDataWasSet,
+          [this](NodeId const nodeId, PortType const, PortIndex const) {
+            onNodeUpdated(nodeId);
+          });
 }
 
 // TODO constructor for an empyt scene?
-
-//---------------------------------------------------------------------
 
 std::vector<NodeId> DataFlowGraphicsScene::selectedNodes() const {
   QList<QGraphicsItem*> graphicsItems = selectedItems();
@@ -152,7 +152,7 @@ void DataFlowGraphicsScene::save() const {
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
-      file.write(saveToJsonDocument().toJson());
+      file.write(QJsonDocument(_graphModel.save()).toJson());
     }
   }
 }
@@ -174,25 +174,7 @@ void DataFlowGraphicsScene::load() {
 
   QByteArray const wholeFile = file.readAll();
 
-  loadFromJsonDocument(QJsonDocument::fromJson(wholeFile));
-}
-
-QJsonDocument DataFlowGraphicsScene::saveToJsonDocument() const {
-  return _graphModel.save();
-}
-
-void DataFlowGraphicsScene::loadFromJsonDocument(QJsonDocument const& json) {
-  _graphModel.load(json);
-}
-
-void DataFlowGraphicsScene::onPortDataSet(NodeId const nodeId,
-                                          PortType const portType,
-                                          PortIndex const portIndex) {
-  Q_UNUSED(portType);
-  Q_UNUSED(portIndex);
-
-  // From BasicGraphicsScene
-  onNodeUpdated(nodeId);
+  _graphModel.load(QJsonDocument::fromJson(wholeFile).object());
 }
 
 }  // namespace QtNodes
