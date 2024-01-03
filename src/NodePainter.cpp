@@ -15,10 +15,7 @@
 namespace QtNodes {
 
 void NodePainter::paint(QPainter* painter, NodeGraphicsObject& ngo) {
-  NodeGeometry geometry(ngo);
-  GraphModel const& model = ngo.graphModel();
-  NodeId const nodeId = ngo.nodeId();
-
+  NodeGeometry geometry(ngo.nodeId(), ngo.graphModel());
   geometry.recalculateSizeIfFontChanged(painter->font());
 
   drawNodeRect(painter, ngo);
@@ -32,57 +29,16 @@ void NodePainter::paint(QPainter* painter, NodeGraphicsObject& ngo) {
   drawEntryLabels(painter, ngo);
 
   drawResizeRect(painter, ngo);
-
-  drawFilledConnectionPoints(painter, ngo);
-
-  drawNodeCaption(painter, ngo);
-
-  drawEntryLabels(painter, ngo);
-
-  drawResizeRect(painter, ngo);
-
   drawStatusIcon(painter, ngo);
-
-  drawResizeRect(painter, ngo);
-
-  if (!model.nodeData(nodeId, NodeRole::CaptionVisible).toBool()) {
-    drawModelNickname(painter, ngo);
-    drawNodeCaption(painter, ngo);
-
-    GraphModel const& model = ngo.graphModel();
-    auto nodeId = ngo.nodeId();
-
-    auto processingStatusVariant =
-        model.nodeData(nodeId, NodeRole::ProcessingStatus);
-    NodeProcessingStatus processingStatus =
-        static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
-
-    if (processingStatus == NodeProcessingStatus::Processing) {
-      if (!model.nodeData(nodeId, NodeRole::ProgressValue)
-               .toString()
-               .isNull()) {
-        drawProgressValue(
-            painter, ngo,
-            model.nodeData(nodeId, NodeRole::ProgressValue).toString());
-      }
-    }
-  }
-
-  /// call custom painter
-  // TODO: think about and implement custom painter delegate
-  // if (auto painterDelegate = model->painterDelegate())
-  //{
-  // painterDelegate->paint(painter, geom, model);
-  //}
 }
 
-void NodePainter::drawNodeRect(QPainter* painter,
-                               NodeGraphicsObject const& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+void NodePainter::drawNodeRect(QPainter* painter, NodeGraphicsObject& ngo) {
+  AbstractGraphModel& model = ngo.graphModel();
 
   NodeId const nodeId = ngo.nodeId();
 
-  NodeGeometry geom(ngo);
+  NodeGeometry geom(nodeId, model);
+
   QSize size = geom.size();
 
   QJsonDocument json =
@@ -134,9 +90,9 @@ void NodePainter::drawNodeRect(QPainter* painter,
 
 void NodePainter::drawConnectionPoints(QPainter* painter,
                                        NodeGraphicsObject& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+  AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
+  NodeGeometry geom(nodeId, model);
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -207,9 +163,9 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
 
 void NodePainter::drawFilledConnectionPoints(QPainter* painter,
                                              NodeGraphicsObject& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+  AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
+  NodeGeometry geom(nodeId, model);
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -251,10 +207,9 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
 }
 
 void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+  AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
-  QSize size = geom.size();
+  NodeGeometry geom(nodeId, model);
 
   if (!model.nodeData(nodeId, NodeRole::CaptionVisible).toBool())
     return;
@@ -293,9 +248,9 @@ void NodePainter::drawNodeCaption(QPainter* painter, NodeGraphicsObject& ngo) {
 }
 
 void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+  AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
+  NodeGeometry geom(nodeId, model);
 
   QJsonDocument json =
       QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
@@ -357,9 +312,9 @@ void NodePainter::drawEntryLabels(QPainter* painter, NodeGraphicsObject& ngo) {
 }
 
 void NodePainter::drawResizeRect(QPainter* painter, NodeGraphicsObject& ngo) {
-  AbstractGraphModel const& model = ngo.graphModel();
+  AbstractGraphModel& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
-  NodeGeometry geom(ngo);
+  NodeGeometry geom(nodeId, model);
 
   if (model.nodeFlags(nodeId) & NodeFlag::Resizable) {
     painter->setBrush(Qt::gray);

@@ -2,10 +2,7 @@
 
 #include "AbstractGraphModel.hpp"
 #include "Definitions.hpp"
-#include "NodeGraphicsObject.hpp"
-// #include "NodeState.hpp"
-// #include "PortType.hpp"
-#include "NodeDataModel.hpp"
+#include "NodeData.hpp"
 #include "StyleCollection.hpp"
 
 #include <QtWidgets/QWidget>
@@ -17,9 +14,9 @@
 
 namespace QtNodes {
 
-NodeGeometry::NodeGeometry(NodeGraphicsObject const& ngo)
-    : _ngo(ngo),
-      _graphModel(ngo.graphModel()),
+NodeGeometry::NodeGeometry(NodeId const nodeId, AbstractGraphModel& graphModel)
+    : _nodeId(nodeId),
+      _graphModel(graphModel),
       _defaultInPortWidth(70),
       _defaultOutPortWidth(70),
       _entryHeight(20),
@@ -31,7 +28,6 @@ NodeGeometry::NodeGeometry(NodeGraphicsObject const& ngo)
 
   QFont f;
   f.setBold(true);
-
   _boldFontMetrics = QFontMetrics(f);
 
   _entryHeight = _fontMetrics.height();
@@ -67,30 +63,26 @@ QRectF NodeGeometry::boundingRect() const {
 
   float addon = 2 * nodeStyle.ConnectionPointDiameter;
 
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
+  QSize size = _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 
   return QRectF(0 - addon, 0 - addon, size.width() + 2 * addon,
                 size.height() + 2 * addon);
 }
 
 QSize NodeGeometry::size() const {
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
-
-  return size;
+  return _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 }
 
-QSize NodeGeometry::recalculateSize() const {
-  NodeId nodeId = _ngo.nodeId();
+void NodeGeometry::recalculateSize() const {
+  NodeId nodeId = _nodeId;
 
   unsigned int height = 0;
   {
     unsigned int nInPorts =
-        _graphModel.nodeData(nodeId, NodeRole::NumberOfInPorts).toUInt();
+        _graphModel.nodeData<unsigned int>(_nodeId, NodeRole::NumberOfInPorts);
 
     unsigned int nOutPorts =
-        _graphModel.nodeData(nodeId, NodeRole::NumberOfOutPorts).toUInt();
+        _graphModel.nodeData<unsigned int>(_nodeId, NodeRole::NumberOfOutPorts);
 
     unsigned int maxNumOfEntries = std::max(nInPorts, nOutPorts);
     unsigned int step = _entryHeight + _verticalSpacing;
@@ -98,8 +90,7 @@ QSize NodeGeometry::recalculateSize() const {
     ;
   }
 
-  if (auto w =
-          _graphModel.nodeData(nodeId, NodeRole::Widget).value<QWidget*>()) {
+  if (auto w = _graphModel.nodeData<QWidget*>(_nodeId, NodeRole::Widget)) {
     height = std::max(height, static_cast<unsigned int>(w->height()));
   }
 
@@ -113,8 +104,7 @@ QSize NodeGeometry::recalculateSize() const {
                static_cast<unsigned int>(_statusIconSize.width())) +
       2 * _verticalSpacing;
 
-  if (auto w =
-          _graphModel.nodeData(nodeId, NodeRole::Widget).value<QWidget*>()) {
+  if (auto w = _graphModel.nodeData<QWidget*>(_nodeId, NodeRole::Widget)) {
     width += w->width();
   }
 
@@ -123,22 +113,22 @@ QSize NodeGeometry::recalculateSize() const {
 
   QSize size(width, height);
 
-  _graphModel.setNodeData(_ngo.nodeId(), NodeRole::Size, size);
-
-  return size;
+  _graphModel.setNodeData(_nodeId, NodeRole::Size, size);
 }
 
-QSize NodeGeometry::recalculateSizeIfFontChanged(QFont const& font) const {
+void NodeGeometry::recalculateSizeIfFontChanged(QFont const& font) const {
   QFontMetrics fontMetrics(font);
-  QFont boldFont = font;
 
-  boldFont.setBold(true);
+  QFont f = font;
+  f.setBold(true);
 
-  QFontMetrics boldFontMetrics(boldFont);
+  QFontMetrics boldFontMetrics(f);
 
-  if (_boldFontMetrics != boldFontMetrics) {
+  if (_fontMetrics != fontMetrics) {
     _fontMetrics = fontMetrics;
-    _boldFontMetrics = boldFontMetrics;
+    _fontMetrics = boldFontMetrics;
+
+    recalculateSize();
   }
 
   return recalculateSize();
@@ -161,8 +151,7 @@ QPointF NodeGeometry::portNodePosition(PortType const portType,
   // TODO: why?
   totalHeight += step / 2.0;
 
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
+  QSize size = _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 
   switch (portType) {
     case PortType::Out: {
@@ -208,13 +197,11 @@ PortIndex NodeGeometry::checkHitScenePoint(
 
   double const tolerance = 2.0 * nodeStyle.ConnectionPointDiameter;
 
-  NodeId nodeId = _ngo.nodeId();
+  NodeId nodeId = _nodeId;
 
-  size_t const n = _graphModel
-                       .nodeData(nodeId, (portType == PortType::Out)
-                                             ? NodeRole::NumberOfOutPorts
-                                             : NodeRole::NumberOfInPorts)
-                       .toUInt();
+  size_t const n = _graphModel.nodeData<unsigned int>(
+      _nodeId, (portType == PortType::Out) ? NodeRole::NumberOfOutPorts
+                                           : NodeRole::NumberOfInPorts);
 
   for (unsigned int portIndex = 0; portIndex < n; ++portIndex) {
     auto pp = portScenePosition(portType, portIndex, sceneTransform);
@@ -232,8 +219,7 @@ PortIndex NodeGeometry::checkHitScenePoint(
 }
 
 QRect NodeGeometry::resizeRect() const {
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
+  QSize size = _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 
   unsigned int rectSize = 7;
 
@@ -242,12 +228,10 @@ QRect NodeGeometry::resizeRect() const {
 }
 
 QPointF NodeGeometry::widgetPosition() const {
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
+  QSize size = _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 
-  NodeId const nodeId = _ngo.nodeId();
-  if (auto w =
-          _graphModel.nodeData(nodeId, NodeRole::Widget).value<QWidget*>()) {
+  NodeId const nodeId = _nodeId;
+  if (auto w = _graphModel.nodeData<QWidget*>(_nodeId, NodeRole::Widget)) {
     // If the widget wants to use as much vertical space as possible,
     // place it immediately after the caption.
     if (w->sizePolicy().verticalPolicy() & QSizePolicy::ExpandFlag) {
@@ -264,35 +248,29 @@ QPointF NodeGeometry::widgetPosition() const {
 }
 
 int NodeGeometry::maxInitialWidgetHeight() const {
-  QSize size =
-      _graphModel.nodeData(_ngo.nodeId(), NodeRole::Size).value<QSize>();
+  QSize size = _graphModel.nodeData<QSize>(_nodeId, NodeRole::Size);
 
   return size.height() - captionHeight();
 }
 
 unsigned int NodeGeometry::captionHeight() const {
-  NodeId nodeId = _ngo.nodeId();
-  GraphModel const& model = _ngo.graphModel();
+  NodeId nodeId = _nodeId;
 
-  if (!_graphModel.nodeData(nodeId, NodeRole::CaptionVisible).toBool())
+  if (!_graphModel.nodeData(_nodeId, NodeRole::CaptionVisible).toBool())
     return 0;
 
   QString name = _graphModel.nodeData(nodeId, NodeRole::Caption).toString();
 
-  auto nicknameVisible =
-      model.nodeData(nodeId, NodeRole::NicknameVisible).toBool();
-
-  return nicknameVisible ? _fontMetrics.boundingRect(name).height()
-                         : _boldFontMetrics.boundingRect(name).height();
+  return _boldFontMetrics.boundingRect(name).height();
 }
 
 unsigned int NodeGeometry::captionWidth() const {
-  NodeId nodeId = _ngo.nodeId();
+  NodeId nodeId = _nodeId;
 
-  if (!_graphModel.nodeData(nodeId, NodeRole::CaptionVisible).toBool())
+  if (!_graphModel.nodeData(_nodeId, NodeRole::CaptionVisible).toBool())
     return 0;
 
-  QString name = _graphModel.nodeData(nodeId, NodeRole::Caption).toString();
+  QString name = _graphModel.nodeData(_nodeId, NodeRole::Caption).toString();
 
   return _boldFontMetrics.boundingRect(name).width();
 }
@@ -400,28 +378,24 @@ const QIcon& NodeGeometry::processingStatusIcon() const {
 unsigned int NodeGeometry::portWidth(PortType portType) const {
   unsigned width = 0;
 
-  NodeId nodeId = _ngo.nodeId();
-
   size_t const n = _graphModel
-                       .nodeData(nodeId, (portType == PortType::Out)
-                                             ? NodeRole::NumberOfOutPorts
-                                             : NodeRole::NumberOfInPorts)
+                       .nodeData(_nodeId, (portType == PortType::Out)
+                                              ? NodeRole::NumberOfOutPorts
+                                              : NodeRole::NumberOfInPorts)
                        .toUInt();
 
   for (PortIndex portIndex = 0ul; portIndex < n; ++portIndex) {
     QString name;
 
-    if (_graphModel
-            .portData(nodeId, portType, portIndex, PortRole::CaptionVisible)
-            .toBool()) {
-      QVariant portData =
-          _graphModel.portData(nodeId, portType, portIndex, PortRole::Caption);
-
-      name = portData.toString();
+    if (_graphModel.portData<bool>(_nodeId, portType, portIndex,
+                                   PortRole::CaptionVisible)) {
+      name = _graphModel.portData<QString>(_nodeId, portType, portIndex,
+                                           PortRole::Caption);
     } else {
-      QVariant portData =
-          _graphModel.portData(nodeId, portType, portIndex, PortRole::DataType);
-      name = portData.value<NodeDataType>().name;
+      NodeDataType portData = _graphModel.portData<NodeDataType>(
+          _nodeId, portType, portIndex, PortRole::DataType);
+
+      name = portData.name;
     }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)

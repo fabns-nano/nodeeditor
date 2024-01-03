@@ -3,7 +3,6 @@
 #include "ConnectionGraphicsObject.hpp"
 #include "GraphicsView.hpp"
 #include "NodeDelegateModelRegistry.hpp"
-#include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
 
 #include <QtWidgets/QFileDialog>
@@ -34,7 +33,7 @@ namespace QtNodes {
 DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel& graphModel,
                                              QObject* parent)
     : BasicGraphicsScene(graphModel, parent), _graphModel(graphModel) {
-  connect(&_graphModel, &AbstractGraphModel::inPortDataWasSet, this,
+  connect(&_graphModel, &DataFlowGraphModel::inPortDataWasSet, this,
           &DataFlowGraphicsScene::onPortDataSet);
 }
 
@@ -192,17 +191,8 @@ void DataFlowGraphicsScene::onPortDataSet(NodeId const nodeId,
   Q_UNUSED(portType);
   Q_UNUSED(portIndex);
 
-  auto node = nodeGraphicsObject(nodeId);
-
-  if (node) {
-    node->setGeometryChanged();
-
-    NodeGeometry geometry(*node);
-    geometry.recalculateSize();
-
-    node->update();
-    node->moveConnections();
-  }
+  // From BasicGraphicsScene
+  onNodeUpdated(nodeId);
 }
 
 }  // namespace QtNodes

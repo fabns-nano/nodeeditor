@@ -91,9 +91,9 @@ bool NodeConnectionInteraction::disconnect(PortType portToDisconnect) const {
 
   _scene.undoStack().push(new DisconnectCommand(&_scene, connectionId));
 
-  NodeGeometry nodeGeometry(_ngo);
+  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
 
-  QPointF scenePos = nodeGeometry.portScenePosition(
+  QPointF scenePos = geometry.portScenePosition(
       portToDisconnect, getPortIndex(portToDisconnect, connectionId),
       _ngo.sceneTransform());
 
@@ -130,7 +130,7 @@ PortType NodeConnectionInteraction::connectionRequiredPort() const {
 QPointF NodeConnectionInteraction::nodePortScenePosition(
     PortType portType,
     PortIndex portIndex) const {
-  NodeGeometry geometry(_ngo);
+  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
 
   QPointF p =
       geometry.portScenePosition(portType, portIndex, _ngo.sceneTransform());
@@ -141,7 +141,7 @@ QPointF NodeConnectionInteraction::nodePortScenePosition(
 PortIndex NodeConnectionInteraction::nodePortIndexUnderScenePoint(
     PortType portType,
     QPointF const& scenePoint) const {
-  NodeGeometry geometry(_ngo);
+  NodeGeometry geometry(_ngo.nodeId(), _ngo.graphModel());
 
   QTransform sceneTransform = _ngo.sceneTransform();
 

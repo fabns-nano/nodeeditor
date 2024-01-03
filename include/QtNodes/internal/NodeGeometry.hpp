@@ -28,7 +28,7 @@ enum class NodeProcessingStatus;
  */
 class NODE_EDITOR_PUBLIC NodeGeometry {
  public:
-  NodeGeometry(NodeGraphicsObject const& ngo);
+  NodeGeometry(NodeId const nodeId, AbstractGraphModel& graphModel);
 
  public:
   unsigned int entryHeight() const;
@@ -41,10 +41,10 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
   QSize size() const;
 
   /// Updates size unconditionally
-  QSize recalculateSize() const;
+  void recalculateSize() const;
 
   /// Updates size if the QFontMetrics is changed
-  QSize recalculateSizeIfFontChanged(QFont const& font) const;
+  void recalculateSizeIfFontChanged(QFont const& font) const;
 
   QPointF portNodePosition(PortType const portType,
                            PortIndex const index) const;
@@ -111,7 +111,8 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
   unsigned int portWidth(PortType portType) const;
 
  private:
-  NodeGraphicsObject const& _ngo;
+  NodeId const _nodeId;
+
   AbstractGraphModel& _graphModel;
 
   // Some variables are mutable because we need to change drawing

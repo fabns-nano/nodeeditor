@@ -64,7 +64,7 @@ void ConnectionGraphicsObject::initializePosition() {
     if (ngo) {
       QTransform nodeSceneTransform = ngo->sceneTransform();
 
-      NodeGeometry geometry(*ngo);
+      NodeGeometry geometry(nodeId, _graphModel);
 
       QPointF pos = geometry.portScenePosition(attachedPort, portIndex,
                                                nodeSceneTransform);
@@ -146,7 +146,7 @@ void ConnectionGraphicsObject::move() {
     NodeGraphicsObject* ngo = nodeScene()->nodeGraphicsObject(nodeId);
 
     if (ngo) {
-      NodeGeometry nodeGeometry(*ngo);
+      NodeGeometry nodeGeometry(nodeId, _graphModel);
 
       QPointF scenePos = nodeGeometry.portScenePosition(
           portType, getPortIndex(portType, cId), ngo->sceneTransform());
