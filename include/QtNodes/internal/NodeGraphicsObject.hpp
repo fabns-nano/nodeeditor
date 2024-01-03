@@ -46,12 +46,6 @@ class NodeGraphicsObject : public QGraphicsObject {
   /// their corresponding end points.
   void moveConnections() const;
 
-  /**
-   * @brief Method that updates the graphical object accounting for changes in
-   * the node's geometry and ports.
-   */
-  void updateGeometry();
-
   /// Repaints the node once with reacting ports.
   void reactToConnection(ConnectionGraphicsObject const* cgo);
 
@@ -81,8 +75,6 @@ class NodeGraphicsObject : public QGraphicsObject {
 
  private:
   void embedQWidget();
-
-  // private Q_SLOTS:
 
  private:
   NodeId _nodeId;
