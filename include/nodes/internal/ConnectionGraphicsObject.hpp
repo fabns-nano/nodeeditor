@@ -12,8 +12,8 @@ class QGraphicsSceneMouseEvent;
 
 namespace QtNodes {
 
+class AbstractGraphModel;
 class BasicGraphicsScene;
-class GraphModel;
 
 /**
  * @brief The ConnectionGraphicsObject class stores the graphical object
@@ -37,7 +37,7 @@ class ConnectionGraphicsObject : public QGraphicsObject {
  public:
   void initializePosition();
 
-  GraphModel& graphModel() const;
+  AbstractGraphModel& graphModel() const;
 
   BasicGraphicsScene* nodeScene() const;
 
@@ -86,7 +86,7 @@ class ConnectionGraphicsObject : public QGraphicsObject {
  private:
   ConnectionId _connectionId;
 
-  GraphModel& _graphModel;
+  AbstractGraphModel& _graphModel;
 
   ConnectionState _connectionState;
 

@@ -4,8 +4,7 @@
 
 #include <QtCore/QMargins>
 
-#include "GraphModel.hpp"
-#include "NodeDataModel.hpp"
+#include "AbstractGraphModel.hpp"
 #include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
 #include "NodeState.hpp"
@@ -78,7 +77,7 @@ void NodePainter::paint(QPainter* painter, NodeGraphicsObject const& ngo) {
 
 void NodePainter::drawNodeRect(QPainter* painter,
                                NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
 
   NodeId const nodeId = ngo.nodeId();
 
@@ -134,7 +133,7 @@ void NodePainter::drawNodeRect(QPainter* painter,
 
 void NodePainter::drawConnectionPoints(QPainter* painter,
                                        NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   NodeGeometry geom(ngo);
 
@@ -178,23 +177,8 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
           portType == state.reactingPortType()) {
         auto diff = state.draggingPos() - p;
         double dist = std::sqrt(QPointF::dotProduct(diff, diff));
-        bool typeConvertable = false;
 
-        //{
-        // if (portType == PortType::In)
-        //{
-        // typeConvertable =
-        // scene.registry().getTypeConverter(state.reactingDataType(), dataType)
-        // != nullptr;
-        //}
-        // else
-        //{
-        // typeConvertable = scene.registry().getTypeConverter(dataType,
-        // state.reactingDataType()) != nullptr;
-        //}
-        //}
-
-        if (state.reactingDataType().id == dataType.id || typeConvertable) {
+        if (state.reactingDataType().id == dataType.id) {
           double const thres = 40.0;
           r = (dist < thres) ? (1.5 - dist / thres) : 1.0;
         } else {
@@ -211,12 +195,12 @@ void NodePainter::drawConnectionPoints(QPainter* painter,
 
       painter->drawEllipse(p, reducedDiameter * r, reducedDiameter * r);
     }
-  }
+  };
 }
 
 void NodePainter::drawFilledConnectionPoints(QPainter* painter,
                                              NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   NodeGeometry geom(ngo);
 
@@ -260,11 +244,9 @@ void NodePainter::drawFilledConnectionPoints(QPainter* painter,
   }
 }
 
-// TODO: CHECK geom.verticalSpacing() = geo.spacing()?
-// CHECK size.width() = geo.width()
 void NodePainter::drawNodeCaption(QPainter* painter,
                                   NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   NodeGeometry geom(ngo);
   QSize size = geom.size();
@@ -305,45 +287,9 @@ void NodePainter::drawNodeCaption(QPainter* painter,
   painter->setFont(font);
 }
 
-// TODO: check if geo = size
-void NodePainter::drawModelNickname(QPainter* painter,
-                                    const NodeGraphicsObject& ngo) {
-  GraphModel const& model = ngo.graphModel();
-  NodeId const nodeId = ngo.nodeId();
-  QJsonDocument json =
-      QJsonDocument::fromVariant(model.nodeData(nodeId, NodeRole::Style));
-  NodeStyle nodeStyle(json);
-  NodeGeometry geom(ngo);
-  QSize size = geom.size();
-
-  if (!model.nodeData(nodeId, NodeRole::NicknameVisible).toBool())
-    return;
-
-  QString const& nickname =
-      model.nodeData(nodeId, NodeRole::Nickname).toString();
-
-  QFont font = painter->font();
-
-  font.setBold(true);
-
-  QFontMetrics metrics(font);
-
-  auto rect = metrics.boundingRect(nickname);
-
-  QPointF position((size.width() - rect.width()) / 2.0,
-                   (geom.verticalSpacing() + geom.entryHeight()) / 3.0);
-
-  painter->setFont(font);
-  painter->setPen(nodeStyle.FontColor);
-  painter->drawText(position, nickname);
-
-  font.setBold(false);
-  painter->setFont(font);
-}
-
 void NodePainter::drawEntryLabels(QPainter* painter,
                                   NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   NodeGeometry geom(ngo);
 
@@ -409,7 +355,7 @@ void NodePainter::drawEntryLabels(QPainter* painter,
 
 void NodePainter::drawResizeRect(QPainter* painter,
                                  NodeGraphicsObject const& ngo) {
-  GraphModel const& model = ngo.graphModel();
+  AbstractGraphModel const& model = ngo.graphModel();
   NodeId const nodeId = ngo.nodeId();
   NodeGeometry geom(ngo);
 

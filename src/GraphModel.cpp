@@ -10,53 +10,38 @@
 #include "NodeData.hpp"
 #include "StyleCollection.hpp"
 
-
 Q_DECLARE_METATYPE(QWidget*)
 
-namespace QtNodes
-{
+namespace QtNodes {
 
-std::unordered_set<NodeId>
-GraphModel::
-allNodeIds() const
-{
-  std::unordered_set<NodeId> r = {1u, };
+std::unordered_set<NodeId> GraphModel::allNodeIds() const {
+  std::unordered_set<NodeId> r = {
+      1u,
+  };
 
   return r;
 }
 
-
-std::unordered_set<ConnectionId>
-GraphModel::
-allConnectionIds(NodeId const nodeId) const
-{
+std::unordered_set<ConnectionId> GraphModel::allConnectionIds(
+    NodeId const nodeId) const {
   std::unordered_set<ConnectionId> result;
 
-  unsigned int nIn =
-    nodeData(nodeId, NodeRole::NumberOfInPorts).toUInt();
+  unsigned int nIn = nodeData(nodeId, NodeRole::NumberOfInPorts).toUInt();
 
-  for (PortIndex i = 0; i < nIn; ++i)
-  {
-    auto const & connections =
-      connectedNodes(nodeId, PortType::In, i);
+  for (PortIndex i = 0; i < nIn; ++i) {
+    auto const& connections = connectedNodes(nodeId, PortType::In, i);
 
-    for (auto & cn : connections)
-    {
+    for (auto& cn : connections) {
       result.insert(std::make_tuple(cn.first, cn.second, nodeId, i));
     }
-
   }
 
-  unsigned int nOut =
-    nodeData(nodeId, NodeRole::NumberOfOutPorts).toUInt();
+  unsigned int nOut = nodeData(nodeId, NodeRole::NumberOfOutPorts).toUInt();
 
-  for (PortIndex i = 0; i < nOut; ++i)
-  {
-    auto const & connections =
-      connectedNodes(nodeId, PortType::Out, i);
+  for (PortIndex i = 0; i < nOut; ++i) {
+    auto const& connections = connectedNodes(nodeId, PortType::Out, i);
 
-    for (auto & cn : connections)
-    {
+    for (auto& cn : connections) {
       result.insert(std::make_tuple(nodeId, i, cn.first, cn.second));
     }
   }
@@ -64,13 +49,10 @@ allConnectionIds(NodeId const nodeId) const
   return result;
 }
 
-
-std::unordered_set<std::pair<NodeId, PortIndex>>
-GraphModel::
-connectedNodes(NodeId    nodeId,
-               PortType  portType,
-               PortIndex portIndex) const
-{
+std::unordered_set<std::pair<NodeId, PortIndex>> GraphModel::connectedNodes(
+    NodeId nodeId,
+    PortType portType,
+    PortIndex portIndex) const {
   Q_UNUSED(nodeId);
   Q_UNUSED(portType);
   Q_UNUSED(portIndex);
@@ -79,87 +61,58 @@ connectedNodes(NodeId    nodeId,
   return std::unordered_set<std::pair<PortIndex, NodeId>>();
 }
 
-
-bool
-GraphModel::
-connectionExists(ConnectionId const connectionId) const
-{
+bool GraphModel::connectionExists(ConnectionId const connectionId) const {
   Q_UNUSED(connectionId);
 
   return false;
 }
 
-
-NodeId
-GraphModel::
-addNode(QString const nodeType)
-{
+NodeId GraphModel::addNode(QString const nodeType) {
   return InvalidNodeId;
 }
 
-
-bool
-GraphModel::
-connectionPossible(ConnectionId const connectionId)
-{
+bool GraphModel::connectionPossible(ConnectionId const connectionId) {
   NodeId nodeIdIn = getNodeId(PortType::In, connectionId);
   PortIndex portIndexIn = getPortIndex(PortType::In, connectionId);
 
   NodeDataType typeIn =
-    portData(nodeIdIn,
-             PortType::In,
-             portIndexIn,
-             PortRole::DataType).value<NodeDataType>();
+      portData(nodeIdIn, PortType::In, portIndexIn, PortRole::DataType)
+          .value<NodeDataType>();
 
   NodeId nodeIdOut = getNodeId(PortType::Out, connectionId);
   PortIndex portIndexOut = getPortIndex(PortType::Out, connectionId);
 
   NodeDataType typeOut =
-    portData(nodeIdOut,
-             PortType::Out,
-             portIndexOut,
-             PortRole::DataType).value<NodeDataType>();
+      portData(nodeIdOut, PortType::Out, portIndexOut, PortRole::DataType)
+          .value<NodeDataType>();
 
   return (typeIn.id == typeOut.id);
 }
 
-
-void
-GraphModel::
-addConnection(ConnectionId const connectionId)
-{
+void GraphModel::addConnection(ConnectionId const connectionId) {
   Q_UNUSED(connectionId);
 
- Q_EMIT connectionCreated(connectionId);
+  Q_EMIT connectionCreated(connectionId);
 }
 
-
-bool
-GraphModel::
-nodeExists(NodeId const nodeId) const
-{
+bool GraphModel::nodeExists(NodeId const nodeId) const {
   Q_UNUSED(nodeId);
 
   return false;
 }
 
-
-QVariant
-GraphModel::
-nodeData(NodeId nodeId, NodeRole role) const
-{
+QVariant GraphModel::nodeData(NodeId nodeId, NodeRole role) const {
   Q_UNUSED(nodeId);
 
   QVariant result;
 
-  switch (role)
-  {
+  switch (role) {
     case NodeRole::Type:
       result = QString("Default Node Type");
       break;
 
     case NodeRole::Position:
-      result = QPointF(0, 0); // _position;
+      result = QPointF(0, 0);  // _position;
       break;
 
     case NodeRole::Size:
@@ -174,12 +127,10 @@ nodeData(NodeId nodeId, NodeRole role) const
       result = QString("Node");
       break;
 
-    case NodeRole::Style:
-      {
-        auto style = StyleCollection::nodeStyle();
-        result = style.toJson().toVariant();
-      }
-      break;
+    case NodeRole::Style: {
+      auto style = StyleCollection::nodeStyle();
+      result = style.toJson().toVariant();
+    } break;
 
     case NodeRole::NumberOfInPorts:
       result = 1u;
@@ -208,21 +159,13 @@ nodeData(NodeId nodeId, NodeRole role) const
   return result;
 }
 
-
-NodeFlags
-GraphModel::
-nodeFlags(NodeId nodeId) const
-{
+NodeFlags GraphModel::nodeFlags(NodeId nodeId) const {
   Q_UNUSED(nodeId);
 
   return NodeFlag::NoFlags;
 }
 
-
-bool
-GraphModel::
-setNodeData(NodeId nodeId, NodeRole role, QVariant value)
-{
+bool GraphModel::setNodeData(NodeId nodeId, NodeRole role, QVariant value) {
   Q_UNUSED(nodeId);
   Q_UNUSED(role);
   Q_UNUSED(value);
@@ -230,19 +173,14 @@ setNodeData(NodeId nodeId, NodeRole role, QVariant value)
   return false;
 }
 
-
-QVariant
-GraphModel::
-portData(NodeId    nodeId,
-         PortType  portType,
-         PortIndex portIndex,
-         PortRole  role) const
-{
+QVariant GraphModel::portData(NodeId nodeId,
+                              PortType portType,
+                              PortIndex portIndex,
+                              PortRole role) const {
   Q_UNUSED(nodeId);
   Q_UNUSED(portIndex);
 
-  switch (role)
-  {
+  switch (role) {
     case PortRole::Data:
       return QVariant();
       break;
@@ -271,14 +209,10 @@ portData(NodeId    nodeId,
   return QVariant();
 }
 
-
-bool
-GraphModel::
-setPortData(NodeId    nodeId,
-            PortType  portType,
-            PortIndex portIndex,
-            PortRole  role) const
-{
+bool GraphModel::setPortData(NodeId nodeId,
+                             PortType portType,
+                             PortIndex portIndex,
+                             PortRole role) const {
   Q_UNUSED(nodeId);
   Q_UNUSED(portType);
   Q_UNUSED(portIndex);
@@ -287,15 +221,10 @@ setPortData(NodeId    nodeId,
   return false;
 }
 
-
-bool
-GraphModel::
-deleteConnection(ConnectionId const connectionId)
-{
+bool GraphModel::deleteConnection(ConnectionId const connectionId) {
   Q_UNUSED(connectionId);
 
-  if (connectionExists(connectionId))
-  {
+  if (connectionExists(connectionId)) {
     Q_EMIT connectionDeleted(connectionId);
 
     return true;
@@ -304,15 +233,10 @@ deleteConnection(ConnectionId const connectionId)
   return false;
 }
 
-
-bool
-GraphModel::
-deleteNode(NodeId const nodeId)
-{
+bool GraphModel::deleteNode(NodeId const nodeId) {
   Q_UNUSED(nodeId);
 
-  if (nodeExists(nodeId))
-  {
+  if (nodeExists(nodeId)) {
     Q_EMIT nodeDeleted(nodeId);
 
     return true;
@@ -321,5 +245,4 @@ deleteNode(NodeId const nodeId)
   return false;
 }
 
-
-}
+}  // namespace QtNodes

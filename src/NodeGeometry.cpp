@@ -1,7 +1,7 @@
 #include "NodeGeometry.hpp"
 
+#include "AbstractGraphModel.hpp"
 #include "Definitions.hpp"
-#include "GraphModel.hpp"
 #include "NodeGraphicsObject.hpp"
 // #include "NodeState.hpp"
 // #include "PortType.hpp"
@@ -29,7 +29,6 @@ NodeGeometry::NodeGeometry(NodeGraphicsObject const& ngo)
   QFont f;
   f.setBold(true);
 
-
   _boldFontMetrics = QFontMetrics(f);
 
   _entryHeight = _fontMetrics.height();
@@ -37,17 +36,16 @@ NodeGeometry::NodeGeometry(NodeGraphicsObject const& ngo)
   NodeId nodeId = _ngo.nodeId();
   GraphModel const& model = ngo.graphModel();
 
-  auto processingStatusVariant = model.nodeData(nodeId, NodeRole::ProcessingStatus);
-  NodeProcessingStatus processingStatus = static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
+  auto processingStatusVariant =
+      model.nodeData(nodeId, NodeRole::ProcessingStatus);
+  NodeProcessingStatus processingStatus =
+      static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
   _statusIconActive = processingStatus != NodeProcessingStatus::NoStatus;
-
 
   model.nodeData(nodeId, NodeRole::ProcessingStatus);
 
-
   _statusIconSize.setWidth(_statusIconActive ? 32 : 0);
   _statusIconSize.setHeight(_statusIconActive ? 32 : 0);
-
 
   _nSources = _graphModel.nodeData(nodeId, NodeRole::NumberOfInPorts).toInt();
   _nSinks = _graphModel.nodeData(nodeId, NodeRole::NumberOfOutPorts).toInt();
@@ -200,10 +198,9 @@ QPointF NodeGeometry::portNodePosition(PortType const portType,
   return result;
 }
 
-QPointF NodeGeometry::portScenePosition(
-    PortType const portType,
-    PortIndex const index,
-    QTransform const& t = QTransform()) const {
+QPointF NodeGeometry::portScenePosition(PortType const portType,
+                                        PortIndex const index,
+                                        QTransform const& t) const {
   QPointF result = portNodePosition(portType, index);
 
   return t.map(result);
@@ -297,11 +294,11 @@ unsigned int NodeGeometry::captionHeight() const {
 
   QString name = _graphModel.nodeData(nodeId, NodeRole::Caption).toString();
 
-  auto nicknameVisible = model.nodeData(nodeId, NodeRole::NicknameVisible).toBool();
+  auto nicknameVisible =
+      model.nodeData(nodeId, NodeRole::NicknameVisible).toBool();
 
-  return nicknameVisible
-             ? _fontMetrics.boundingRect(name).height()
-             : _boldFontMetrics.boundingRect(name).height();
+  return nicknameVisible ? _fontMetrics.boundingRect(name).height()
+                         : _boldFontMetrics.boundingRect(name).height();
 }
 
 unsigned int NodeGeometry::captionWidth() const {
@@ -361,11 +358,12 @@ void NodeGeometry::updateStatusIconSize() const {
   GraphModel const& model = _ngo.graphModel();
   auto nodeId = _ngo.nodeId();
 
-  auto processingStatusVariant = model.nodeData(nodeId, NodeRole::ProcessingStatus);
-  NodeProcessingStatus processingStatus = static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
+  auto processingStatusVariant =
+      model.nodeData(nodeId, NodeRole::ProcessingStatus);
+  NodeProcessingStatus processingStatus =
+      static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
 
-  _statusIconActive =
-      processingStatus != NodeProcessingStatus::NoStatus;
+  _statusIconActive = processingStatus != NodeProcessingStatus::NoStatus;
 
   if (oldStatus != _statusIconActive) {
     _statusIconSize.setWidth(_statusIconActive ? 32 : 0);
@@ -382,18 +380,19 @@ QRect NodeGeometry::statusIconRect() const {
 
   auto iconPos =
       portScenePosition(PortType::Out, maxSourcesSinks).toPoint() +
-      QPoint{static_cast<int>(-statusIconSize().width() - _verticalSpacing / 2), 0};
+      QPoint{static_cast<int>(-statusIconSize().width() - _verticalSpacing / 2),
+             0};
 
   return QRect{iconPos, statusIconSize()};
 }
 
 const QIcon& NodeGeometry::processingStatusIcon() const {
-
-
   GraphModel const& model = _ngo.graphModel();
   auto nodeId = _ngo.nodeId();
-  auto processingStatusVariant = model.nodeData(nodeId, NodeRole::ProcessingStatus);
-  NodeProcessingStatus processingStatus = static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
+  auto processingStatusVariant =
+      model.nodeData(nodeId, NodeRole::ProcessingStatus);
+  NodeProcessingStatus processingStatus =
+      static_cast<NodeProcessingStatus>(processingStatusVariant.toInt());
 
   switch (processingStatus) {
     case NodeProcessingStatus::NoStatus:

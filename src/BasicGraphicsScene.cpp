@@ -6,10 +6,8 @@
 #include <unordered_set>
 #include <utility>
 
-
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGraphicsSceneMoveEvent>
-
 
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
@@ -29,35 +27,36 @@
 
 namespace QtNodes {
 
-BasicGraphicsScene::BasicGraphicsScene(GraphModel& graphModel, QObject* parent)
+BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel& graphModel,
+                                       QObject* parent)
     : QGraphicsScene(parent), _graphModel(graphModel) {
   setItemIndexMethod(QGraphicsScene::NoIndex);
 
-  connect(&_graphModel, &GraphModel::connectionCreated, this,
+  connect(&_graphModel, &AbstractGraphModel::connectionCreated, this,
           &BasicGraphicsScene::onConnectionCreated);
 
-  connect(&_graphModel, &GraphModel::connectionDeleted, this,
+  connect(&_graphModel, &AbstractGraphModel::connectionDeleted, this,
           &BasicGraphicsScene::onConnectionDeleted);
 
-  connect(&_graphModel, &GraphModel::nodeCreated, this,
+  connect(&_graphModel, &AbstractGraphModel::nodeCreated, this,
           &BasicGraphicsScene::onNodeCreated);
 
-  connect(&_graphModel, &GraphModel::nodeDeleted, this,
+  connect(&_graphModel, &AbstractGraphModel::nodeDeleted, this,
           &BasicGraphicsScene::onNodeDeleted);
 
-  connect(&_graphModel, &GraphModel::nodePositonUpdated, this,
+  connect(&_graphModel, &AbstractGraphModel::nodePositonUpdated, this,
           &BasicGraphicsScene::onNodePositionUpdated);
 
-  connect(&_graphModel, &GraphModel::portsAboutToBeDeleted, this,
+  connect(&_graphModel, &AbstractGraphModel::portsAboutToBeDeleted, this,
           &BasicGraphicsScene::onPortsAboutToBeDeleted);
 
-  connect(&_graphModel, &GraphModel::portsDeleted, this,
+  connect(&_graphModel, &AbstractGraphModel::portsDeleted, this,
           &BasicGraphicsScene::onPortsDeleted);
 
-  connect(&_graphModel, &GraphModel::portsAboutToBeInserted, this,
+  connect(&_graphModel, &AbstractGraphModel::portsAboutToBeInserted, this,
           &BasicGraphicsScene::onPortsAboutToBeInserted);
 
-  connect(&_graphModel, &GraphModel::portsInserted, this,
+  connect(&_graphModel, &AbstractGraphModel::portsInserted, this,
           &BasicGraphicsScene::onPortsInserted);
 
   traverseGraphAndPopulateGraphicsObjects();
@@ -65,11 +64,11 @@ BasicGraphicsScene::BasicGraphicsScene(GraphModel& graphModel, QObject* parent)
 
 BasicGraphicsScene::~BasicGraphicsScene() = default;
 
-GraphModel const& BasicGraphicsScene::graphModel() const {
+AbstractGraphModel const& BasicGraphicsScene::graphModel() const {
   return _graphModel;
 }
 
-GraphModel& BasicGraphicsScene::graphModel() {
+AbstractGraphModel& BasicGraphicsScene::graphModel() {
   return _graphModel;
 }
 
@@ -219,6 +218,9 @@ void BasicGraphicsScene::onPortsAboutToBeDeleted(
     NodeId const nodeId,
     PortType const portType,
     std::unordered_set<PortIndex> const& portIndexSet) {
+  Q_UNUSED(nodeId);
+  Q_UNUSED(portType);
+  Q_UNUSED(portIndexSet);
   // NodeGraphicsObject * node = nodeGraphicsObject(nodeId);
 
   // if (node)
@@ -245,6 +247,10 @@ void BasicGraphicsScene::onPortsDeleted(
     NodeId const nodeId,
     PortType const portType,
     std::unordered_set<PortIndex> const& portIndexSet) {
+  Q_UNUSED(nodeId);
+  Q_UNUSED(portType);
+  Q_UNUSED(portIndexSet);
+
   NodeGraphicsObject* node = nodeGraphicsObject(nodeId);
 
   if (node) {
@@ -256,14 +262,18 @@ void BasicGraphicsScene::onPortsAboutToBeInserted(
     NodeId const nodeId,
     PortType const portType,
     std::unordered_set<PortIndex> const& portIndexSet) {
-  // TODO
+  Q_UNUSED(nodeId);
+  Q_UNUSED(portType);
+  Q_UNUSED(portIndexSet);
 }
 
 void BasicGraphicsScene::onPortsInserted(
     NodeId const nodeId,
     PortType const portType,
     std::unordered_set<PortIndex> const& portIndexSet) {
-  // TODO
+  Q_UNUSED(nodeId);
+  Q_UNUSED(portType);
+  Q_UNUSED(portIndexSet);
 }
 
 #if 0

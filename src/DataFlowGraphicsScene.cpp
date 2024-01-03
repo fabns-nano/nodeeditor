@@ -26,44 +26,32 @@
 #include "NodeGeometry.hpp"
 #include "NodeGraphicsObject.hpp"
 
-namespace QtNodes
-{
+namespace QtNodes {
 
-
-DataFlowGraphicsScene::
-    DataFlowGraphicsScene(DataFlowGraphModel &graphModel,
-                          QObject * parent)
-    : BasicGraphicsScene(graphModel, parent)
-      , _graphModel(graphModel)
-{
-  connect(&_graphModel, &GraphModel::portDataSet,
-          this, &DataFlowGraphicsScene::onPortDataSet);
+DataFlowGraphicsScene::DataFlowGraphicsScene(DataFlowGraphModel& graphModel,
+                                             QObject* parent)
+    : BasicGraphicsScene(graphModel, parent), _graphModel(graphModel) {
+  connect(&_graphModel, &AbstractGraphModel::portDataSet, this,
+          &DataFlowGraphicsScene::onPortDataSet);
 }
 
-
 // TODO constructor for an empyt scene?
 // TODO constructor for an empyt scene?
 // TODO constructor for an empyt scene?
 // TODO constructor for an empyt scene?
-
 
 //---------------------------------------------------------------------
 
-std::vector<NodeId>
-    DataFlowGraphicsScene::
-    selectedNodes() const
-{
+std::vector<NodeId> DataFlowGraphicsScene::selectedNodes() const {
   QList<QGraphicsItem*> graphicsItems = selectedItems();
 
   std::vector<NodeId> result;
   result.reserve(graphicsItems.size());
 
-  for (QGraphicsItem* item : graphicsItems)
-  {
+  for (QGraphicsItem* item : graphicsItems) {
     auto ngo = qgraphicsitem_cast<NodeGraphicsObject*>(item);
 
-    if (ngo != nullptr)
-    {
+    if (ngo != nullptr) {
       result.push_back(ngo->nodeId());
     }
   }
@@ -71,51 +59,45 @@ std::vector<NodeId>
   return result;
 }
 
-
-QMenu *
-    DataFlowGraphicsScene::
-    createSceneMenu(QPointF const scenePos)
-{
-  QMenu * modelMenu = new QMenu();
+QMenu* DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos) {
+  QMenu* modelMenu = new QMenu();
 
   auto skipText = QStringLiteral("skip me");
 
-          // Add filterbox to the context menu
-  auto * txtBox = new QLineEdit(modelMenu);
+  // Add filterbox to the context menu
+  auto* txtBox = new QLineEdit(modelMenu);
   txtBox->setPlaceholderText(QStringLiteral("Filter"));
   txtBox->setClearButtonEnabled(true);
 
-  auto *txtBoxAction = new QWidgetAction(modelMenu);
+  auto* txtBoxAction = new QWidgetAction(modelMenu);
   txtBoxAction->setDefaultWidget(txtBox);
 
-          // 1.
+  // 1.
   modelMenu->addAction(txtBoxAction);
 
-          // Add result treeview to the context menu
-  QTreeWidget *treeView = new QTreeWidget(modelMenu);
+  // Add result treeview to the context menu
+  QTreeWidget* treeView = new QTreeWidget(modelMenu);
   treeView->header()->close();
 
-  auto *treeViewAction = new QWidgetAction(modelMenu);
+  auto* treeViewAction = new QWidgetAction(modelMenu);
   treeViewAction->setDefaultWidget(treeView);
 
-          // 2.
+  // 2.
   modelMenu->addAction(treeViewAction);
 
   auto registry = _graphModel.dataModelRegistry();
 
   QMap<QString, QTreeWidgetItem*> topLevelItems;
-  for (auto const &cat : registry->categories())
-  {
+  for (auto const& cat : registry->categories()) {
     auto item = new QTreeWidgetItem(treeView);
     item->setText(0, cat);
     item->setData(0, Qt::UserRole, skipText);
     topLevelItems[cat] = item;
   }
 
-  for (auto const &assoc : registry->registeredModelsCategoryAssociation())
-  {
+  for (auto const& assoc : registry->registeredModelsCategoryAssociation()) {
     auto parent = topLevelItems[assoc.second];
-    auto item   = new QTreeWidgetItem(parent);
+    auto item = new QTreeWidgetItem(parent);
     item->setText(0, assoc.first);
     item->setData(0, Qt::UserRole, assoc.first);
   }
@@ -123,55 +105,42 @@ QMenu *
   treeView->expandAll();
 
   connect(treeView, &QTreeWidget::itemClicked,
-          [this,
-           modelMenu,
-           skipText,
-           scenePos](QTreeWidgetItem *item, int)
-          {
+          [this, modelMenu, skipText, scenePos](QTreeWidgetItem* item, int) {
             QString modelName = item->data(0, Qt::UserRole).toString();
 
-            if (modelName == skipText)
-            {
+            if (modelName == skipText) {
               return;
             }
 
             NodeId nodeId = this->_graphModel.addNode(modelName);
 
-            if (nodeId != InvalidNodeId)
-            {
-              _graphModel.setNodeData(nodeId,
-                                      NodeRole::Position,
-                                      scenePos);
+            if (nodeId != InvalidNodeId) {
+              _graphModel.setNodeData(nodeId, NodeRole::Position, scenePos);
             }
 
             modelMenu->close();
           });
 
-          //Setup filtering
-  connect(txtBox, &QLineEdit::textChanged,
-          [&](const QString &text)
-          {
-            for (auto &topLvlItem : topLevelItems)
-            {
-              for (int i = 0; i < topLvlItem->childCount(); ++i)
-              {
-                auto child       = topLvlItem->child(i);
-                auto modelName   = child->data(0, Qt::UserRole).toString();
-                const bool match = (modelName.contains(text, Qt::CaseInsensitive));
-                child->setHidden(!match);
-              }
-            }
-          });
+  // Setup filtering
+  connect(txtBox, &QLineEdit::textChanged, [&](const QString& text) {
+    for (auto& topLvlItem : topLevelItems) {
+      for (int i = 0; i < topLvlItem->childCount(); ++i) {
+        auto child = topLvlItem->child(i);
+        auto modelName = child->data(0, Qt::UserRole).toString();
+        const bool match = (modelName.contains(text, Qt::CaseInsensitive));
+        child->setHidden(!match);
+      }
+    }
+  });
 
-          // make sure the text box gets focus so the user doesn't have to click on it
+  // make sure the text box gets focus so the user doesn't have to click on it
   txtBox->setFocus();
 
-          // QMenu's instance auto-destruction
+  // QMenu's instance auto-destruction
   modelMenu->setAttribute(Qt::WA_DeleteOnClose);
 
   return modelMenu;
 }
-
 
 #if 0
 std::shared_ptr<Connection>
@@ -249,58 +218,49 @@ restoreNode(QJsonObject const &nodeJson)
   return *nodePtr;
 }
 
-
 #endif
 
-void
-    DataFlowGraphicsScene::
-    save() const
-{
-   //QString fileName =
-   //QFileDialog::getSaveFileName(nullptr,
-   //tr("Open Flow Scene"),
-   //QDir::homePath(),
-   //tr("Flow Scene Files (*.flow)"));
+void DataFlowGraphicsScene::save() const {
+  // QString fileName =
+  // QFileDialog::getSaveFileName(nullptr,
+  // tr("Open Flow Scene"),
+  // QDir::homePath(),
+  // tr("Flow Scene Files (*.flow)"));
 
-          //if (!fileName.isEmpty())
-          //{
-          //if (!fileName.endsWith("flow", Qt::CaseInsensitive))
-          //fileName += ".flow";
+  // if (!fileName.isEmpty())
+  //{
+  // if (!fileName.endsWith("flow", Qt::CaseInsensitive))
+  // fileName += ".flow";
 
-          //QFile file(fileName);
-          //if (file.open(QIODevice::WriteOnly))
-          //{
-          //file.write(saveToMemory());
-          //}
-          //}
+  // QFile file(fileName);
+  // if (file.open(QIODevice::WriteOnly))
+  //{
+  // file.write(saveToMemory());
+  // }
+  // }
 }
 
+void DataFlowGraphicsScene::load() {
+  // QString fileName =
+  // QFileDialog::getOpenFileName(nullptr,
+  // tr("Open Flow Scene"),
+  // QDir::homePath(),
+  // tr("Flow Scene Files (*.flow)"));
 
-void
-    DataFlowGraphicsScene::
-    load()
-{
-   //QString fileName =
-   //QFileDialog::getOpenFileName(nullptr,
-   //tr("Open Flow Scene"),
-   //QDir::homePath(),
-   //tr("Flow Scene Files (*.flow)"));
+  // if (!QFileInfo::exists(fileName))
+  // return;
 
-          //if (!QFileInfo::exists(fileName))
-          //return;
+  // QFile file(fileName);
 
-          //QFile file(fileName);
+  // if (!file.open(QIODevice::ReadOnly))
+  // return;
 
-          //if (!file.open(QIODevice::ReadOnly))
-          //return;
+  // clearScene();
 
-          //clearScene();
+  // QByteArray wholeFile = file.readAll();
 
-          //QByteArray wholeFile = file.readAll();
-
-          //loadFromMemory(wholeFile);
+  // loadFromMemory(wholeFile);
 }
-
 
 #if 0
 
@@ -362,19 +322,17 @@ loadFromMemory(const QByteArray &data)
   }
 }
 
-
 #endif
 
-void
-    DataFlowGraphicsScene::
-    onPortDataSet(NodeId const nodeId,
-                  PortType const portType,
-                  PortIndex const portIndex)
-{
+void DataFlowGraphicsScene::onPortDataSet(NodeId const nodeId,
+                                          PortType const portType,
+                                          PortIndex const portIndex) {
+  Q_UNUSED(portType);
+  Q_UNUSED(portIndex);
+
   auto node = nodeGraphicsObject(nodeId);
 
-  if (node)
-  {
+  if (node) {
     node->setGeometryChanged();
 
     NodeGeometry geometry(*node);
@@ -385,5 +343,4 @@ void
   }
 }
 
-
-}
+}  // namespace QtNodes

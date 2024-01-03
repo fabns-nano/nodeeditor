@@ -2,10 +2,10 @@
 
 #include <QtGui/QIcon>
 
+#include "AbstractGraphModel.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionState.hpp"
 #include "Definitions.hpp"
-#include "GraphModel.hpp"
 #include "NodeData.hpp"
 #include "StyleCollection.hpp"
 
@@ -143,7 +143,7 @@ static void drawNormalLine(QPainter* painter,
 
   bool useGradientColor = false;
 
-  GraphModel const& graphModel = cgo.graphModel();
+  AbstractGraphModel const& graphModel = cgo.graphModel();
 
   if (connectionStyle.useDataDefinedColors()) {
     using QtNodes::PortType;
@@ -185,10 +185,10 @@ static void drawNormalLine(QPainter* painter,
     painter->setBrush(Qt::NoBrush);
 
     QColor cOut = normalColorOut;
-//    if (frozen) {
-//      cOut = frozenColor;
-//      p.setStyle(connectionStyle.frozenStyle());
-//    }
+    //    if (frozen) {
+    //      cOut = frozenColor;
+    //      p.setStyle(connectionStyle.frozenStyle());
+    //    }
 
     if (selected)
       cOut = cOut.darker(200);
@@ -204,10 +204,10 @@ static void drawNormalLine(QPainter* painter,
 
       if (i == segments / 2) {
         QColor cIn = normalColorIn;
-//        if (frozen) {
-//          cIn = frozenColor;
-//          p.setStyle(connectionStyle.frozenStyle());
-//        }
+        //        if (frozen) {
+        //          cIn = frozenColor;
+        //          p.setStyle(connectionStyle.frozenStyle());
+        //        }
 
         if (selected)
           cIn = cIn.darker(200);
@@ -235,10 +235,10 @@ static void drawNormalLine(QPainter* painter,
       p.setColor(selectedColor);
     }
 
-//    else if (frozen) {
-//      p.setColor(frozenColor);
-//      p.setStyle(connectionStyle.frozenStyle());
-//    }
+    //    else if (frozen) {
+    //      p.setColor(frozenColor);
+    //      p.setStyle(connectionStyle.frozenStyle());
+    //    }
 
     painter->setPen(p);
     painter->setBrush(Qt::NoBrush);

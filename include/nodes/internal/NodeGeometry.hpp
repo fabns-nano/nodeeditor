@@ -11,8 +11,7 @@
 
 namespace QtNodes {
 
-class NodeDataModel;
-class GraphModel;
+class AbstractGraphModel;
 class NodeGraphicsObject;
 
 enum class NodeProcessingStatus;
@@ -25,7 +24,7 @@ enum class NodeProcessingStatus;
 /**
  * A helper-class for manipulating the node's geometry.
  * It is designed to be constructed on stack and used in-place.
- * The class is in essense a wrapper around the GraphModel.
+ * The class is in essense a wrapper around the AbstractGraphModel.
  */
 class NODE_EDITOR_PUBLIC NodeGeometry {
  public:
@@ -113,7 +112,7 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
 
  private:
   NodeGraphicsObject const& _ngo;
-  GraphModel& _graphModel;
+  AbstractGraphModel& _graphModel;
 
   // some variables are mutable because
   // we need to change drawing metrics
@@ -134,7 +133,7 @@ class NODE_EDITOR_PUBLIC NodeGeometry {
    */
   mutable bool _statusIconActive;
 
-//  std::unique_ptr<NodeDataModel> const& _dataModel;
+  //  std::unique_ptr<NodeDataModel> const& _dataModel;
 
   /**
    * @brief Processing status icons

@@ -6,10 +6,10 @@
 #include <QtWidgets/QGraphicsEffect>
 #include <QtWidgets/QtWidgets>
 
+#include "AbstractGraphModel.hpp"
 #include "BasicGraphicsScene.hpp"
 #include "ConnectionGraphicsObject.hpp"
 #include "ConnectionIdUtils.hpp"
-#include "GraphModel.hpp"
 #include "NodeConnectionInteraction.hpp"
 #include "NodeGeometry.hpp"
 #include "NodePainter.hpp"
@@ -61,7 +61,7 @@ NodeGraphicsObject::NodeGraphicsObject(BasicGraphicsScene& scene, NodeId nodeId)
   setPos(pos);
 }
 
-GraphModel& NodeGraphicsObject::graphModel() const {
+AbstractGraphModel& NodeGraphicsObject::graphModel() const {
   return _graphModel;
 }
 

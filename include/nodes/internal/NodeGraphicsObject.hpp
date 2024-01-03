@@ -10,14 +10,8 @@ class QGraphicsProxyWidget;
 namespace QtNodes {
 
 class BasicGraphicsScene;
-class GraphModel;
-class GroupGraphicsObject;
+class AbstractGraphModel;
 
-/**
- * @brief The NodeGraphicsObject class handles the graphical part of a node.
- * Each node is associated with a unique NodeGraphicsObject. This class reacts
- * on GUI events, mouse clicks and forwards painting operation.
- */
 class NodeGraphicsObject : public QGraphicsObject {
   Q_OBJECT
  public:
@@ -32,7 +26,7 @@ class NodeGraphicsObject : public QGraphicsObject {
   ~NodeGraphicsObject() override = default;
 
  public:
-  GraphModel& graphModel() const;
+  AbstractGraphModel& graphModel() const;
 
   BasicGraphicsScene* nodeScene() const;
 
@@ -90,7 +84,7 @@ class NodeGraphicsObject : public QGraphicsObject {
  private:
   NodeId _nodeId;
 
-  GraphModel& _graphModel;
+  AbstractGraphModel& _graphModel;
 
   NodeState _nodeState;
 
