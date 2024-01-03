@@ -8,7 +8,7 @@
 #include <QtWidgets/QApplication>
 
 
-#include "CustomGraphModel.hpp"
+#include "SimpleGraphModel.hpp"
 
 using QtNodes::BasicGraphicsScene;
 using QtNodes::ConnectionStyle;
@@ -19,7 +19,7 @@ using QtNodes::StyleCollection;
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
 
-  CustomGraphModel graphModel;
+  SimpleGraphModel graphModel;
 
   // Initialize and connect two nodes.
   {
