@@ -149,8 +149,8 @@ void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
             _graphModel.connectedNodes(nodeId, PortType::Out, index);
 
         for (auto cn : connectedNodes) {
-          fifo.push(cn.second);
-          allNodeIds.erase(cn.second);
+          fifo.push(cn.first);
+          allNodeIds.erase(cn.first);
 
           auto connectionId =
               std::make_tuple(nodeId, index, cn.first, cn.second);
