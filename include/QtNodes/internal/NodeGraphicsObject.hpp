@@ -76,6 +76,8 @@ class NodeGraphicsObject : public QGraphicsObject {
  private:
   void embedQWidget();
 
+  void setLockedState();
+
  private:
   NodeId _nodeId;
 

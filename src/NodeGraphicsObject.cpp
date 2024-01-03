@@ -27,9 +27,8 @@ NodeGraphicsObject::NodeGraphicsObject(BasicGraphicsScene& scene, NodeId nodeId)
 
   setFlag(QGraphicsItem::ItemDoesntPropagateOpacityToChildren, true);
   setFlag(QGraphicsItem::ItemIsFocusable, true);
-  setFlag(QGraphicsItem::ItemIsMovable, true);
-  setFlag(QGraphicsItem::ItemIsSelectable, true);
-  setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+
+  setLockedState();
 
   setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
@@ -103,6 +102,16 @@ void NodeGraphicsObject::embedQWidget() {
   }
 }
 
+void NodeGraphicsObject::setLockedState() {
+  NodeFlags flags = _graphModel.nodeFlags(_nodeId);
+
+  bool const locked = flags.testFlag(NodeFlag::Locked);
+
+  setFlag(QGraphicsItem::ItemIsMovable, !locked);
+  setFlag(QGraphicsItem::ItemIsSelectable, !locked);
+  setFlag(QGraphicsItem::ItemSendsScenePositionChanges, !locked);
+}
+
 QRectF NodeGraphicsObject::boundingRect() const {
   AbstractNodeGeometry& geometry = nodeScene()->nodeGeometry();
   return geometry.boundingRect(_nodeId);
@@ -173,7 +182,8 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent* event) {
         NodeConnectionInteraction interaction(
             *this, *nodeScene()->connectionGraphicsObject(cnId), *nodeScene());
 
-        interaction.disconnect(portToCheck);
+        if (_graphModel.detachPossible(cnId))
+          interaction.disconnect(portToCheck);
       } else  // initialize new Connection
       {
         if (portToCheck == PortType::Out) {
