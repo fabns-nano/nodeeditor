@@ -124,6 +124,8 @@ QMenu* BasicGraphicsScene::createSceneMenu(QPointF const scenePos) {
 void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
   auto allNodeIds = _graphModel.allNodeIds();
 
+  std::vector<ConnectionId> connectionsToCreate;
+
   while (!allNodeIds.empty()) {
     std::queue<NodeId> fifo;
 
@@ -153,8 +155,7 @@ void BasicGraphicsScene::traverseGraphAndPopulateGraphicsObjects() {
           auto connectionId =
               std::make_tuple(nodeId, index, cn.first, cn.second);
 
-          _connectionGraphicsObjects[connectionId] =
-              std::make_unique<ConnectionGraphicsObject>(*this, connectionId);
+          connectionsToCreate.push_back(connectionId);
         }
       }
     }  // while
