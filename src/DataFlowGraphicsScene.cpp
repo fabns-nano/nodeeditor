@@ -118,12 +118,22 @@ QMenu* DataFlowGraphicsScene::createSceneMenu(QPointF const scenePos) {
 
   // Setup filtering
   connect(txtBox, &QLineEdit::textChanged, [treeView](const QString& text) {
+    QTreeWidgetItemIterator categoryIt(treeView,
+                                       QTreeWidgetItemIterator::HasChildren);
+    while (*categoryIt)
+      (*categoryIt++)->setHidden(true);
     QTreeWidgetItemIterator it(treeView, QTreeWidgetItemIterator::NoChildren);
     while (*it) {
-      auto modelName = (*it)->data(0, Qt::UserRole).toString();
+      auto modelName = (*it)->text(0);
       const bool match = (modelName.contains(text, Qt::CaseInsensitive));
       (*it)->setHidden(!match);
-
+      if (match) {
+        QTreeWidgetItem* parent = (*it)->parent();
+        while (parent) {
+          parent->setHidden(false);
+          parent = parent->parent();
+        }
+      }
       ++it;
     }
   });
