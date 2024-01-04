@@ -5,7 +5,6 @@
 #include <QtNodes/NodeData>
 #include <QtNodes/NodeDelegateModelRegistry>
 
-
 #include <QtGui/QScreen>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMenuBar>
@@ -83,14 +82,21 @@ int main(int argc, char* argv[]) {
   DataFlowGraphModel dataFlowGraphModel(registry);
 
   l->addWidget(menuBar);
-  auto scene = new FlowScene(dataFlowGraphModel, &mainWidget);
-  l->addWidget(new FlowView(scene));
+  auto scene = new DataFlowGraphicsScene(dataFlowGraphModel, &mainWidget);
+
+  auto view = new GraphicsView(scene);
+  l->addWidget(view);
   l->setContentsMargins(0, 0, 0, 0);
   l->setSpacing(0);
 
-  QObject::connect(saveAction, &QAction::triggered, scene, &FlowScene::save);
+  QObject::connect(saveAction, &QAction::triggered, scene,
+                   &DataFlowGraphicsScene::save);
 
-  QObject::connect(loadAction, &QAction::triggered, scene, &FlowScene::load);
+  QObject::connect(loadAction, &QAction::triggered, scene,
+                   &DataFlowGraphicsScene::load);
+
+  QObject::connect(scene, &DataFlowGraphicsScene::sceneLoaded, view,
+                   &GraphicsView::centerScene);
 
   mainWidget.setWindowTitle("Data Flow: simplest calculator");
   mainWidget.resize(800, 600);
