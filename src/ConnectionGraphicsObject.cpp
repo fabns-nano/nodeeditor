@@ -1,13 +1,5 @@
 #include "ConnectionGraphicsObject.hpp"
 
-#include <QtWidgets/QGraphicsBlurEffect>
-#include <QtWidgets/QGraphicsDropShadowEffect>
-#include <QtWidgets/QGraphicsSceneMouseEvent>
-#include <QtWidgets/QGraphicsView>
-#include <QtWidgets/QStyleOptionGraphicsItem>
-
-#include <QtCore/QDebug>
-
 #include "AbstractGraphModel.hpp"
 #include "AbstractNodeGeometry.hpp"
 #include "BasicGraphicsScene.hpp"
@@ -19,6 +11,17 @@
 #include "NodeGraphicsObject.hpp"
 #include "StyleCollection.hpp"
 #include "locateNode.hpp"
+
+#include <QtWidgets/QGraphicsBlurEffect>
+#include <QtWidgets/QGraphicsDropShadowEffect>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QStyleOptionGraphicsItem>
+
+
+#include <QtCore/QDebug>
+
+#include <stdexcept>
 
 namespace QtNodes {
 
