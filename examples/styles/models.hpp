@@ -15,52 +15,48 @@ using QtNodes::PortType;
 
 /// The class can potentially incapsulate any user data which need to
 /// be transferred within the Node Editor graph
-class MyNodeData : public NodeData {
- public:
-  NodeDataType type() const override {
-    return NodeDataType{"MyNodeData", "My Node Data"};
-  }
+class MyNodeData : public NodeData
+{
+public:
+    NodeDataType type() const override { return NodeDataType{"MyNodeData", "My Node Data"}; }
 };
 
 //------------------------------------------------------------------------------
 
 /// The model dictates the number of inputs and outputs for the Node.
 /// In this example it has no logic.
-class MyDataModel : public NodeDelegateModel {
-  Q_OBJECT
- public:
-  ~MyDataModel() = default;
+class MyDataModel : public NodeDelegateModel
+{
+    Q_OBJECT
+public:
+    ~MyDataModel() = default;
 
- public:
-  QString caption() const override { return QString("My Data Model"); }
+public:
+    QString caption() const override { return QString("My Data Model"); }
 
-  QString name() const override { return QString("MyDataModel"); }
+    QString name() const override { return QString("MyDataModel"); }
 
-  QString nickname() const override { return QString(); }
+public:
+    QJsonObject save() const override
+    {
+        QJsonObject modelJson;
 
-  QString progressValue() const override { return QString(); }
+        modelJson["name"] = name();
 
- public:
-  QJsonObject save() const override {
-    QJsonObject modelJson;
+        return modelJson;
+    }
 
-    modelJson["name"] = name();
+public:
+    unsigned int nPorts(PortType const) const override { return 3; }
 
-    return modelJson;
-  }
+    NodeDataType dataType(PortType const, PortIndex const) const override
+    {
+        return MyNodeData().type();
+    }
 
- public:
-  unsigned int nPorts(PortType const) const override { return 3; }
+    std::shared_ptr<NodeData> outData(PortIndex) override { return std::make_shared<MyNodeData>(); }
 
-  NodeDataType dataType(PortType const, PortIndex const) const override {
-    return MyNodeData().type();
-  }
+    void setInData(std::shared_ptr<NodeData>, PortIndex const) override {}
 
-  std::shared_ptr<NodeData> outData(PortIndex) override {
-    return std::make_shared<MyNodeData>();
-  }
-
-  void setInData(std::shared_ptr<NodeData>, PortIndex const) override {}
-
-  QWidget* embeddedWidget() override { return nullptr; }
+    QWidget *embeddedWidget() override { return nullptr; }
 };

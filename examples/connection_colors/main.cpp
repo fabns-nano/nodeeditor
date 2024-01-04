@@ -7,21 +7,21 @@
 #include <QtNodes/NodeData>
 #include <QtNodes/NodeDelegateModelRegistry>
 
-
 #include "models.hpp"
 
+using QtNodes::ConnectionStyle;
+using QtNodes::DataFlowGraphicsScene;
 using QtNodes::DataFlowGraphModel;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
+using QtNodes::GraphicsView;
 using QtNodes::NodeDelegateModelRegistry;
 
-static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels() {
-  auto ret = std::make_shared<NodeDelegateModelRegistry>();
+static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels()
+{
+    auto ret = std::make_shared<NodeDelegateModelRegistry>();
 
-  ret->registerModel<NaiveDataModel>();
+    ret->registerModel<NaiveDataModel>();
 
-  /*
+    /*
      We could have more models registered.
      All of them become items in the context meny of the scene.
 
@@ -30,12 +30,13 @@ static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels() {
 
    */
 
-  return ret;
+    return ret;
 }
 
-static void setStyle() {
-  ConnectionStyle::setConnectionStyle(
-      R"(
+static void setStyle()
+{
+    ConnectionStyle::setConnectionStyle(
+        R"(
   {
     "ConnectionStyle": {
       "UseDataDefinedColors": true
@@ -46,21 +47,22 @@ static void setStyle() {
 
 //------------------------------------------------------------------------------
 
-int main(int argc, char* argv[]) {
-  QApplication app(argc, argv);
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-  setStyle();
+    setStyle();
 
-  std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
-  DataFlowGraphModel dataFlowGraphModel(registry);
+    std::shared_ptr<NodeDelegateModelRegistry> registry = registerDataModels();
+    DataFlowGraphModel dataFlowGraphModel(registry);
 
-  FlowScene scene(dataFlowGraphModel);
+    DataFlowGraphicsScene scene(dataFlowGraphModel);
 
-  FlowView view(&scene);
+    GraphicsView view(&scene);
 
-  view.setWindowTitle("Node-based flow editor");
-  view.resize(800, 600);
-  view.show();
+    view.setWindowTitle("Node-based flow editor");
+    view.resize(800, 600);
+    view.show();
 
-  return app.exec();
+    return app.exec();
 }

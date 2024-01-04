@@ -12,86 +12,86 @@ namespace QtNodes {
 class BasicGraphicsScene;
 class AbstractGraphModel;
 
-class NodeGraphicsObject : public QGraphicsObject {
-  Q_OBJECT
- public:
-  // Needed for qgraphicsitem_cast
-  enum { Type = UserType + 1 };
+class NodeGraphicsObject : public QGraphicsObject
+{
+    Q_OBJECT
+public:
+    // Needed for qgraphicsitem_cast
+    enum { Type = UserType + 1 };
 
-  int type() const override { return Type; }
+    int type() const override { return Type; }
 
- public:
-  NodeGraphicsObject(BasicGraphicsScene& scene, NodeId node);
+public:
+    NodeGraphicsObject(BasicGraphicsScene &scene, NodeId node);
 
-  ~NodeGraphicsObject() override = default;
+    ~NodeGraphicsObject() override = default;
 
- public:
-  AbstractGraphModel& graphModel() const;
+public:
+    AbstractGraphModel &graphModel() const;
 
-  BasicGraphicsScene* nodeScene() const;
+    BasicGraphicsScene *nodeScene() const;
 
-  NodeId nodeId() { return _nodeId; }
+    NodeId nodeId() { return _nodeId; }
 
-  NodeId nodeId() const { return _nodeId; }
+    NodeId nodeId() const { return _nodeId; }
 
-  NodeState& nodeState() { return _nodeState; }
+    NodeState &nodeState() { return _nodeState; }
 
-  NodeState const& nodeState() const { return _nodeState; }
+    NodeState const &nodeState() const { return _nodeState; }
 
-  QRectF boundingRect() const override;
+    QRectF boundingRect() const override;
 
-  void setGeometryChanged();
+    void setGeometryChanged();
 
-  /// Visits all attached connections and corrects
-  /// their corresponding end points.
-  void moveConnections() const;
+    /// Visits all attached connections and corrects
+    /// their corresponding end points.
+    void moveConnections() const;
 
-  /// Repaints the node once with reacting ports.
-  void reactToConnection(ConnectionGraphicsObject const* cgo);
+    /// Repaints the node once with reacting ports.
+    void reactToConnection(ConnectionGraphicsObject const *cgo);
 
- protected:
-  void paint(QPainter* painter,
-             QStyleOptionGraphicsItem const* option,
-             QWidget* widget = 0) override;
+protected:
+    void paint(QPainter *painter,
+               QStyleOptionGraphicsItem const *option,
+               QWidget *widget = 0) override;
 
-  QVariant itemChange(GraphicsItemChange change,
-                      const QVariant& value) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-  void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
 
-  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
-  void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
 
-  void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
- private:
-  void embedQWidget();
+private:
+    void embedQWidget();
 
-  void setLockedState();
+    void setLockedState();
 
- private:
-  NodeId _nodeId;
+private:
+    NodeId _nodeId;
 
-  AbstractGraphModel& _graphModel;
+    AbstractGraphModel &_graphModel;
 
-  NodeState _nodeState;
+    NodeState _nodeState;
 
-  bool _draggingIntoGroup;
+    bool _draggingIntoGroup;
 
-  GroupGraphicsObject* _possibleGroup;
+    GroupGraphicsObject *_possibleGroup;
 
-  QRectF _originalGroupSize;
+    QRectF _originalGroupSize;
 
-  // either nullptr or owned by parent QGraphicsItem
-  QGraphicsProxyWidget* _proxyWidget;
+    // either nullptr or owned by parent QGraphicsItem
+    QGraphicsProxyWidget *_proxyWidget;
 };
-}  // namespace QtNodes
+} // namespace QtNodes

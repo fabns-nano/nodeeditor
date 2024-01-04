@@ -15,86 +15,82 @@ namespace QtNodes {
 class AbstractGraphModel;
 class BasicGraphicsScene;
 
-/**
- * @brief The ConnectionGraphicsObject class stores the graphical object
- * of a connection. Each connection is associated with a unique graphics
- * object. Upon creation, the object adds itself to the scene.
- */
-class ConnectionGraphicsObject : public QGraphicsObject {
-  Q_OBJECT
- public:
-  // Needed for qgraphicsitem_cast
-  enum { Type = UserType + 2 };
+/// Graphic Object for connection. Adds itself to scene
+class ConnectionGraphicsObject : public QGraphicsObject
+{
+    Q_OBJECT
+public:
+    // Needed for qgraphicsitem_cast
+    enum { Type = UserType + 2 };
 
-  int type() const override { return Type; }
+    int type() const override { return Type; }
 
- public:
-  ConnectionGraphicsObject(BasicGraphicsScene& scene,
-                           ConnectionId const connectionId);
+public:
+    ConnectionGraphicsObject(BasicGraphicsScene &scene, ConnectionId const connectionId);
 
-  ~ConnectionGraphicsObject() = default;
+    ~ConnectionGraphicsObject() = default;
 
- public:
-  AbstractGraphModel& graphModel() const;
+public:
+    AbstractGraphModel &graphModel() const;
 
-  BasicGraphicsScene* nodeScene() const;
+    BasicGraphicsScene *nodeScene() const;
 
-  ConnectionId const& connectionId() const;
+    ConnectionId const &connectionId() const;
 
-  QRectF boundingRect() const override;
+    QRectF boundingRect() const override;
 
-  QPainterPath shape() const override;
+    QPainterPath shape() const override;
 
-  QPointF const& endPoint(PortType portType) const;
+    QPointF const &endPoint(PortType portType) const;
 
-  QPointF out() const { return _out; }
+    QPointF out() const { return _out; }
 
-  QPointF in() const { return _in; }
+    QPointF in() const { return _in; }
 
-  std::pair<QPointF, QPointF> pointsC1C2() const;
+    std::pair<QPointF, QPointF> pointsC1C2() const;
 
-  void setEndPoint(PortType portType, QPointF const& point);
+    void setEndPoint(PortType portType, QPointF const &point);
 
-  /// Updates the position of both ends
-  void move();
+    /// Updates the position of both ends
+    void move();
 
-  ConnectionState const& connectionState() const;
+    ConnectionState const &connectionState() const;
 
-  ConnectionState& connectionState();
+    ConnectionState &connectionState();
 
- protected:
-  void paint(QPainter* painter,
-             QStyleOptionGraphicsItem const* option,
-             QWidget* widget = 0) override;
+protected:
+    void paint(QPainter *painter,
+               QStyleOptionGraphicsItem const *option,
+               QWidget *widget = 0) override;
 
-  void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
-  void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
 
-  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
- private:
-  void initializePosition();
+private:
+    void initializePosition();
 
-  void addGraphicsEffect();
+    void addGraphicsEffect();
 
-  std::pair<QPointF, QPointF> pointsC1C2Horizontal() const;
+    std::pair<QPointF, QPointF> pointsC1C2Horizontal() const;
 
-  std::pair<QPointF, QPointF> pointsC1C2Vertical() const;
+    std::pair<QPointF, QPointF> pointsC1C2Vertical() const;
 
- private:
-  ConnectionId _connectionId;
+private:
+    ConnectionId _connectionId;
 
-  AbstractGraphModel& _graphModel;
+    AbstractGraphModel &_graphModel;
 
-  ConnectionState _connectionState;
+    ConnectionState _connectionState;
 
-  mutable QPointF _out;
-  mutable QPointF _in;
+    mutable QPointF _out;
+    mutable QPointF _in;
 };
 
-}  // namespace QtNodes
+} // namespace QtNodes

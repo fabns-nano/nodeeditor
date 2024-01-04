@@ -5,46 +5,50 @@
 namespace QtNodes {
 
 NodeDelegateModel::NodeDelegateModel()
-    : _nodeStyle(StyleCollection::nodeStyle()) {
-  // Derived classes can initialize specific style here
+    : _nodeStyle(StyleCollection::nodeStyle())
+{
+    // Derived classes can initialize specific style here
 }
 
-QJsonObject NodeDelegateModel::save() const {
-  QJsonObject modelJson;
+QJsonObject NodeDelegateModel::save() const
+{
+    QJsonObject modelJson;
 
-  modelJson["model-name"] = name();
-  modelJson["nickname"] = nickname();
+    modelJson["model-name"] = name();
 
-  return modelJson;
+    return modelJson;
 }
 
-void NodeDelegateModel::load(QJsonObject const&) {
-  //
+void NodeDelegateModel::load(QJsonObject const &)
+{
+    //
 }
 
-ConnectionPolicy NodeDelegateModel::portConnectionPolicy(PortType portType,
-                                                         PortIndex) const {
-  auto result = ConnectionPolicy::One;
-  switch (portType) {
+ConnectionPolicy NodeDelegateModel::portConnectionPolicy(PortType portType, PortIndex) const
+{
+    auto result = ConnectionPolicy::One;
+    switch (portType) {
     case PortType::In:
-      result = ConnectionPolicy::One;
-      break;
+        result = ConnectionPolicy::One;
+        break;
     case PortType::Out:
-      result = ConnectionPolicy::Many;
-      break;
+        result = ConnectionPolicy::Many;
+        break;
     case PortType::None:
-      break;
-  }
+        break;
+    }
 
-  return result;
+    return result;
 }
 
-NodeStyle const& NodeDelegateModel::nodeStyle() const {
-  return _nodeStyle;
+NodeStyle const &NodeDelegateModel::nodeStyle() const
+{
+    return _nodeStyle;
 }
 
-void NodeDelegateModel::setNodeStyle(NodeStyle const& style) {
-  _nodeStyle = style;
+void NodeDelegateModel::setNodeStyle(NodeStyle const &style)
+{
+    _nodeStyle = style;
 }
 
-}  // namespace QtNodes
+} // namespace QtNodes
