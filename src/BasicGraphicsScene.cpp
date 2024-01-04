@@ -37,6 +37,7 @@ BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel &graphModel, QObject *
     , _graphModel(graphModel)
     , _nodeGeometry(std::make_unique<DefaultHorizontalNodeGeometry>(_graphModel))
     , _nodePainter(std::make_unique<DefaultNodePainter>())
+    , _nodeDrag(false)
     , _undoStack(new QUndoStack(this))
     , _orientation(Qt::Horizontal)
 {
@@ -71,6 +72,8 @@ BasicGraphicsScene::BasicGraphicsScene(AbstractGraphModel &graphModel, QObject *
             &AbstractGraphModel::nodeUpdated,
             this,
             &BasicGraphicsScene::onNodeUpdated);
+
+    connect(this, &BasicGraphicsScene::nodeClicked, this, &BasicGraphicsScene::onNodeClicked);
 
     connect(&_graphModel, &AbstractGraphModel::modelReset, this, &BasicGraphicsScene::onModelReset);
 
@@ -258,6 +261,7 @@ void BasicGraphicsScene::onNodePositionUpdated(NodeId const nodeId)
     if (node) {
         node->setPos(_graphModel.nodeData(nodeId, NodeRole::Position).value<QPointF>());
         node->update();
+        _nodeDrag = true;
     }
 }
 
@@ -273,6 +277,13 @@ void BasicGraphicsScene::onNodeUpdated(NodeId const nodeId)
         node->update();
         node->moveConnections();
     }
+}
+
+void BasicGraphicsScene::onNodeClicked(NodeId const nodeId)
+{
+    if (_nodeDrag)
+        Q_EMIT nodeMoved(nodeId, _graphModel.nodeData(nodeId, NodeRole::Position).value<QPointF>());
+    _nodeDrag = false;
 }
 
 void BasicGraphicsScene::onModelReset()
