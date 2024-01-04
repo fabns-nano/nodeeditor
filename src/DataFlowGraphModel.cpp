@@ -3,6 +3,8 @@
 
 #include <QJsonArray>
 
+#include <stdexcept>
+
 namespace QtNodes {
 
 DataFlowGraphModel::DataFlowGraphModel(
@@ -62,32 +64,23 @@ NodeId DataFlowGraphModel::addNode(QString const nodeType) {
               onOutPortDataUpdated(newId, portIndex);
             });
 
-    connect(model.get(),
-            &NodeDelegateModel::portsAboutToBeDeleted,
-            this,
-            [newId, this](PortType const portType,
-                          PortIndex const first,
-                          PortIndex const last)
-            { portsAboutToBeDeleted(newId, portType, first, last);});
+    connect(model.get(), &NodeDelegateModel::portsAboutToBeDeleted, this,
+            [newId, this](PortType const portType, PortIndex const first,
+                          PortIndex const last) {
+              portsAboutToBeDeleted(newId, portType, first, last);
+            });
 
-    connect(model.get(),
-            &NodeDelegateModel::portsDeleted,
-            this,
+    connect(model.get(), &NodeDelegateModel::portsDeleted, this,
             &DataFlowGraphModel::portsDeleted);
 
-    connect(model.get(),
-            &NodeDelegateModel::portsAboutToBeInserted,
-            this,
-            [newId, this](PortType const portType,
-                          PortIndex const first,
-                          PortIndex const last)
-            { portsAboutToBeInserted(newId, portType, first, last);});
+    connect(model.get(), &NodeDelegateModel::portsAboutToBeInserted, this,
+            [newId, this](PortType const portType, PortIndex const first,
+                          PortIndex const last) {
+              portsAboutToBeInserted(newId, portType, first, last);
+            });
 
-    connect(model.get(),
-            &NodeDelegateModel::portsInserted,
-            this,
+    connect(model.get(), &NodeDelegateModel::portsInserted, this,
             &DataFlowGraphModel::portsInserted);
-
 
     _models[newId] = std::move(model);
 
@@ -127,16 +120,12 @@ void DataFlowGraphModel::addConnection(ConnectionId const connectionId) {
 
   Q_EMIT connectionCreated(connectionId);
 
-  QVariant const portDataToPropagate = portData(connectionId.outNodeId,
-                                                PortType::Out,
-                                                connectionId.outPortIndex,
-                                                PortRole::Data);
+  QVariant const portDataToPropagate =
+      portData(connectionId.outNodeId, PortType::Out, connectionId.outPortIndex,
+               PortRole::Data);
 
-  setPortData(connectionId.inNodeId,
-              PortType::In,
-              connectionId.inPortIndex,
-              portDataToPropagate,
-              PortRole::Data);
+  setPortData(connectionId.inNodeId, PortType::In, connectionId.inPortIndex,
+              portDataToPropagate, PortRole::Data);
 }
 
 bool DataFlowGraphModel::nodeExists(NodeId const nodeId) const {
