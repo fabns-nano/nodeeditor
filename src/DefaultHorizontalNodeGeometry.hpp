@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AbstractNodeGeometry.hpp"
+#include "qicon.h"
 
 #include <QtGui/QFontMetrics>
 
@@ -56,7 +57,8 @@ public:
    * @brief Returns the icon associated with the model's current processing
    * status.
    */
-    const QIcon &processingStatusIcon() const;
+    const QIcon&
+    processingStatusIcon() const;
 
 private:
     QRectF portTextRect(NodeId const nodeId,
@@ -90,12 +92,12 @@ private:
     /**
    * @brief Processing status icons
    */
-    const QIcon _statusUpdated{"://status_icons/updated.svg"};
-    const QIcon _statusProcessing{"://status_icons/processing.svg"};
-    const QIcon _statusPending{"://status_icons/pending.svg"};
-    const QIcon _statusInvalid{"://status_icons/failed.svg"};
-    const QIcon _statusEmpty{"://status_icons/empty.svg"};
-    const QIcon _statusPartial{"://status_icons/partial.svg"};
+//    const QIcon _statusUpdated{"://status_icons/updated.svg"};
+//    const QIcon _statusProcessing{"://status_icons/processing.svg"};
+//    const QIcon _statusPending{"://status_icons/pending.svg"};
+//    const QIcon _statusInvalid{"://status_icons/failed.svg"};
+//    const QIcon _statusEmpty{"://status_icons/empty.svg"};
+//    const QIcon _statusPartial{"://status_icons/partial.svg"};
 
     unsigned int _entryWidth; // TODO: where was is used?
 

@@ -23,11 +23,8 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QtGlobal>
 
-#include "ConnectionGraphicsObject.hpp"
-#include "DataModelRegistry.hpp"
-#include "GraphicsView.hpp"
-#include "NodeGeometry.hpp"
-#include "NodeGraphicsObject.hpp"
+#include <stdexcept>
+#include <utility>
 
 namespace QtNodes {
 

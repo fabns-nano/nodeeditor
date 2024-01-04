@@ -143,10 +143,10 @@ private:
     QAction *_copySelectionAction = nullptr;
     QAction *_pasteAction = nullptr;
 
-    /**
-   * @brief _copySelectionAction Action that triggers copying the selected scene items to the clipboard.
-   */
-    QAction *_copySelectionAction;
+//    /**
+//   * @brief _copySelectionAction Action that triggers copying the selected scene items to the clipboard.
+//   */
+//    QAction *_copySelectionAction;
 
     /**
    * @brief _cutSelectionAction Action that triggers cutting the selected scene items to the clipboard.

@@ -12,6 +12,22 @@
 
 namespace QtNodes {
 
+/**
+ * @brief The NodeProcessingStatus enum defines a node's state in the data topology.
+ * It should be used when managing the topology's data flow and should be propagated
+ * to subsequent nodes before and after each computation.
+ */
+enum class NodeProcessingStatus
+{
+    NoStatus   = 0,
+    Updated    = 1,
+    Processing = 2,
+    Pending    = 3,
+    Empty      = 4,
+    Failed     = 5,
+    Partial    = 6,
+};
+
 class StyleCollection;
 
 /**
@@ -43,6 +59,12 @@ public:
 
     /// Name makes this model unique
     virtual QString name() const = 0;
+
+    virtual bool nicknameVisible() const { return true; }
+
+    virtual QString nickname() const = 0;
+
+    virtual QString progressValue() const = 0;
 
 public:
     QJsonObject save() const override;
