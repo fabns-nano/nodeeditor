@@ -5,7 +5,7 @@
 #include <QtNodes/Connection>
 #include <QtNodes/FlowScene>
 #include <QtNodes/FlowView>
-#include <QtNodes/Node>
+// #include <QtNodes/Node>
 
 #include <catch2/catch.hpp>
 
@@ -13,13 +13,13 @@
 #include <QtWidgets/QApplication>
 
 using QtNodes::Connection;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
-using QtNodes::Node;
+using QtNodes::DataFlowGraphicsScene;
+using QtNodes::GraphicsView;
 using QtNodes::NodeData;
-using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
+using QtNodes::NodeDelegateModel;
+using QtNodes::NodeDelegateModelRegistry;
+using QtNodes::NodeId;
 using QtNodes::PortIndex;
 using QtNodes::PortType;
 

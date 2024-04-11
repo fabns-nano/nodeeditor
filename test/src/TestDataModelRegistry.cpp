@@ -1,13 +1,13 @@
-#include <QtNodes/DataModelRegistry>
+#include <QtNodes/NodeDelegateModelRegistry>
 
 #include <catch2/catch.hpp>
 
 #include "StubNodeDataModel.hpp"
 
-using QtNodes::DataModelRegistry;
 using QtNodes::NodeData;
-using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
+using QtNodes::NodeDelegateModel;
+using QtNodes::NodeDelegateModelRegistry;
 using QtNodes::PortIndex;
 using QtNodes::PortType;
 
@@ -19,9 +19,9 @@ public:
 };
 } // namespace
 
-TEST_CASE("DataModelRegistry::registerModel", "[interface]")
+TEST_CASE("NodeDelegateModelRegistry::registerModel", "[interface]")
 {
-    DataModelRegistry registry;
+    NodeDelegateModelRegistry registry;
 
     SECTION("stub model")
     {

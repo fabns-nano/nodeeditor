@@ -3,18 +3,18 @@
 
 #include <QtNodes/FlowScene>
 #include <QtNodes/FlowView>
-#include <QtNodes/Node>
-#include <QtNodes/NodeDataModel>
+// #include <QtNodes/Node>
+#include <QtNodes/NodeDelegateModel>
 
 #include <catch2/catch.hpp>
 
 #include <QtTest>
 
-using QtNodes::FlowScene;
-using QtNodes::FlowView;
-using QtNodes::Node;
-using QtNodes::NodeDataModel;
+using QtNodes::DataFlowGraphicsScene;
+using QtNodes::GraphicsView;
+using QtNodes::NodeDelegateModel;
 using QtNodes::NodeGraphicsObject;
+using QtNodes::NodeId;
 using QtNodes::PortType;
 
 TEST_CASE("NodeDataModel::portOutConnectionPolicy(...) isn't called for input "

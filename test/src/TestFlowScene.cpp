@@ -3,8 +3,8 @@
 #include "StubNodeDataModel.hpp"
 
 #include <QtNodes/FlowScene>
-#include <QtNodes/Node>
-#include <QtNodes/NodeDataModel>
+// #include <QtNodes/Node>
+#include <QtNodes/NodeDelegateModel>
 
 #include <catch2/catch.hpp>
 
@@ -14,12 +14,12 @@
 #include <vector>
 
 using QtNodes::Connection;
-using QtNodes::DataModelRegistry;
-using QtNodes::FlowScene;
-using QtNodes::Node;
+using QtNodes::DataFlowGraphicsScene;
 using QtNodes::NodeData;
-using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
+using QtNodes::NodeDelegateModel;
+using QtNodes::NodeDelegateModelRegistry;
+using QtNodes::NodeId;
 using QtNodes::PortIndex;
 using QtNodes::PortType;
 
@@ -173,7 +173,7 @@ TEST_CASE("FlowScene triggers connections created or deleted", "[gui]")
     }
 }
 
-TEST_CASE("FlowScene's DataModelRegistry outlives nodes and connections", "[asan][gui]")
+TEST_CASE("FlowScene's NodeDelegateModelRegistry outlives nodes and connections", "[asan][gui]")
 {
     class MockDataModel : public StubNodeDataModel
     {
@@ -185,7 +185,7 @@ TEST_CASE("FlowScene's DataModelRegistry outlives nodes and connections", "[asan
         ~MockDataModel() { (*incrementOnDestruction)++; }
 
         // The reference ensures that we point into the memory that would be free'd
-        // if the DataModelRegistry doesn't outlive this node
+        // if the NodeDelegateModelRegistry doesn't outlive this node
         int *const &incrementOnDestruction;
     };
 
@@ -210,7 +210,7 @@ TEST_CASE("FlowScene's DataModelRegistry outlives nodes and connections", "[asan
     {
         auto setup = applicationSetup();
 
-        auto registry = std::make_shared<DataModelRegistry>();
+        auto registry = std::make_shared<NodeDelegateModelRegistry>();
         registry->registerModel(MockDataModelCreator(&modelsDestroyed));
 
         modelsDestroyed = 0;
@@ -220,7 +220,7 @@ TEST_CASE("FlowScene's DataModelRegistry outlives nodes and connections", "[asan
         auto &node = scene.createNode(scene.registry().create("name"));
 
         // On destruction, if this `node` outlives its MockDataModelCreator,
-        // (if it outlives the DataModelRegistry), then we trigger undefined
+        // (if it outlives the NodeDelegateModelRegistry), then we trigger undefined
         // behavior through use-after-free. ASAN will catch that.
     }
 

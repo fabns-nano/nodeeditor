@@ -9,7 +9,7 @@ endif()
 add_executable(test_nodes
   test_main.cpp
   src/TestDragging.cpp
-  src/TestDataModelRegistry.cpp
+  src/TestNodeDelegateModelRegistry.cpp
   src/TestFlowScene.cpp
   src/TestNodeGroup.cpp
   src/TestNodeGraphicsObject.cpp

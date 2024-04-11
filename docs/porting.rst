@@ -26,7 +26,7 @@ rename some base clasess you are inheriting from.
                                                      smaller per-node models became
                                                      delegates.
 
-     DataModelRegistry     NodeDelegateModelRegistry See comment above
+     NodeDelegateModelRegistry     NodeDelegateModelRegistry See comment above
 
      FlowView              GraphicsView
 

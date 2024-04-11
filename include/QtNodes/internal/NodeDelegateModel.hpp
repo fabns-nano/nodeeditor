@@ -12,20 +12,21 @@
 
 namespace QtNodes {
 
+enum class NodeValidationState { Valid, Warning, Error };
+
 /**
  * @brief The NodeProcessingStatus enum defines a node's state in the data topology.
  * It should be used when managing the topology's data flow and should be propagated
  * to subsequent nodes before and after each computation.
  */
-enum class NodeProcessingStatus
-{
-    NoStatus   = 0,
-    Updated    = 1,
+enum class NodeProcessingStatus {
+    NoStatus = 0,
+    Updated = 1,
     Processing = 2,
-    Pending    = 3,
-    Empty      = 4,
-    Failed     = 5,
-    Partial    = 6,
+    Pending = 3,
+    Empty = 4,
+    Failed = 5,
+    Partial = 6,
 };
 
 class StyleCollection;
@@ -36,7 +37,9 @@ class StyleCollection;
  * AbstractGraphModel.
  * This class is the same what has been called NodeDataModel before v3.
  */
-class NODE_EDITOR_PUBLIC NodeDelegateModel : public QObject, public Serializable
+class NODE_EDITOR_PUBLIC NodeDelegateModel
+    : public QObject
+    , public Serializable
 {
     Q_OBJECT
 
@@ -101,6 +104,17 @@ public:
     virtual QWidget *embeddedWidget() = 0;
 
     virtual bool resizable() const { return false; }
+
+    virtual NodeValidationState validationState() const { return NodeValidationState::Valid; }
+
+    virtual QString validationMessage() const { return QString(""); }
+
+    // virtual NodePainterDelegate *painterDelegate() const { return nullptr; }
+
+    /**
+   * @brief Returns the node's current processing status.
+   */
+    virtual NodeProcessingStatus processingStatus() const { return NodeProcessingStatus::NoStatus; }
 
 public Q_SLOTS:
 

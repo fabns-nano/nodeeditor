@@ -30,14 +30,9 @@ public:
 
     QString name() const override { return QString("ImageShowModel"); }
 
-  QString
-  nickname() const override
-  { return QString(); }
+    QString nickname() const override { return QString(); }
 
-  QString
-  progressValue() const override
-  { return QString(); }
-
+    QString progressValue() const override { return QString(); }
 
 public:
     virtual QString modelName() const { return QString("Resulting Image"); }

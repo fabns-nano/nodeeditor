@@ -33,13 +33,9 @@ public:
 
     QString name() const override { return TextSourceDataModel::Name(); }
 
-  QString
-  nickname() const override
-  { return QString(); }
+    QString nickname() const override { return QString(); }
 
-  QString
-  progressValue() const override
-  { return QString(); }
+    QString progressValue() const override { return QString(); }
 
 public:
     unsigned int nPorts(PortType portType) const override;
