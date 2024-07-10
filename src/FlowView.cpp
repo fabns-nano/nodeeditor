@@ -578,7 +578,16 @@ contextMenuEvent(QContextMenuEvent *event)
     topLevelItems[cat] = item;
   }
 
-  for (auto const &assoc : _scene->registry().registeredModelsCategoryAssociation())
+  std::unordered_map<QString, QString> nodes_map = _scene->registry().registeredModelsCategoryAssociation();
+
+  std::vector<std::pair<QString, QString>> nodes_pairs(nodes_map.begin(), nodes_map.end());
+
+  std::sort(nodes_pairs.begin(), nodes_pairs.end(),
+            [](const auto& l_key, const auto& r_key) {
+              return l_key.first < r_key.first;
+            });
+
+  for (auto const &assoc : nodes_pairs)
   {
     auto parent = topLevelItems[assoc.second];
     auto item   = new QTreeWidgetItem(parent);
